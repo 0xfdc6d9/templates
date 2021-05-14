@@ -10,10 +10,9 @@ ull base = 131;
 ull mod = 212370440130137957ll;
 constexpr int maxn = 10010;
 
-ull hashs(char s[]) { //var = hashs(string)
-    int len = strlen(s);
+ull hashs(string s) { //var = hashs(string)
     ull ans = 0;
-    for (int i = 0; i < len; i++)
+    for (int i = 0; i < s.length(); i++)
         ans = (ans * base + (ull)s[i]) % mod;
     return ans;
 }
