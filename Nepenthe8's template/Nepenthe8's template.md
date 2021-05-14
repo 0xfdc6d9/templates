@@ -18,7 +18,36 @@ ull hashs(string s) { //var = hashs(string)
 }
 ~~~
 
+### 查询子串哈希值
 
+~~~c++
+typedef unsigned long long ull;
+ull base = 131;
+
+ull h1[N], h2[N], p[N]/* base的i次方 */;
+
+ull hashs(int l, int r) { //假设要查询[i, j]的哈希值，调用hashs(i + 1, j + 1)，rhashs(i + 1, j + 1)
+    return (h1[r] - h1[l - 1] * p[r - l + 1] % mod + mod) % mod;
+}
+
+ull rhashs(int l, int r) { /* 翻转子串的哈希值 */
+    return (h2[l] - h2[r + 1] * p[r - l + 1] % mod + mod) % mod;
+}
+
+void hashs_init() { //为了防止查询时出现数组越界的情况，将整体的哈希值都向右移了一位
+    p[0] = 1;
+    h1[0] = (ull)s[0];
+    for (int i = 1; i < s.length(); i++) {
+        h1[i + 1] = ((h1[i] * base) % mod + (ull)s[i]) % mod;
+        p[i] = (p[i - 1] * base) % mod; //预处理base的i次方
+    }
+    for (int i = s.length() - 1; i >= 0; i--) {
+        h2[i + 1] = ((h2[i + 2] * base) % mod + (ull)s[i]) % mod;
+    }
+}
+~~~
+
+值得提一嘴的是，在查询子串哈希值时，不能使用自然溢出时采用的模数，因为要想取出区间[lf, rt]的值，那么我们需要在h[rt]这一位上，将h[lf - 1]累加的哈希值通过左移操作消除掉。而自然溢出无法保证得到的结果能够消除h[lf - 1]之前的影响。
 
 ## 数学
 
@@ -52,6 +81,58 @@ void Euler() {
 ## 数据机构
 
 ## 图论
+
+### SPFA
+
+~~~c++
+namespace SPFA {
+	const int maxn = 200010;
+	struct Edge {
+		int v;
+		int cost;
+		Edge(int _v = 0, int _cost = 0):v(_v), cost(_cost) {}
+	};
+	vector<Edge> g[maxn];
+	void addedge(int u, int v, int w) {
+		g[u].push_back({v, w});
+	}
+	bool vis[maxn]; //在队列标志
+	int cnt[maxn]; //每个点的入队列次数
+	int dis[maxn];
+	bool spfa(int start, int n) {
+		for (int i = 0; i <= n; i++) {
+			vis[i] = false;
+			dis[i] = INF;
+			cnt[i] = 0;
+		}
+		vis[start] = true;
+		dis[start] = 0;
+		queue<int> q;
+		while (!q.empty())
+			q.pop();
+		q.push(start);
+		cnt[start] = 1;
+		while (!q.empty()) {
+			int u = q.front();
+			q.pop();
+			vis[u] = false;
+			for (int i = 0; i < g[u].size(); i++) {
+				int v = g[u][i].v;
+				if (dis[v] > dis[u] + g[u][i].cost) {
+					dis[v] = dis[u] + g[u][i].cost;
+					if (!vis[v]) {
+						vis[v] = true;
+						q.push(v);
+						if (++cnt[v] > n) //cnt[i]为入队列次数，用来判定是否存在负环回路
+							return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+};
+~~~
 
 ### 最小环
 
