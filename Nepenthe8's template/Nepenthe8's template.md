@@ -55,17 +55,17 @@ void hashs_init() { //为了防止查询时出现数组越界的情况，将整�
 
 ~~~c++
 constexpr int maxm = 10000010;
-LL np[maxm], p[maxm], f[maxm], pn; //not prime(bool), prime[], f[i] is the smallest positive number m such that n/m is a square.
+ll np[maxm], p[maxm], f[maxm], pn; //not prime(bool), prime[], f[i] is the smallest positive number m such that n/m is a square.
 
 void Euler() {
-	f[1] = 1;
-    for (LL i = 2; i < maxm; i += 1) {
+    f[1] = 1;
+    for (ll i = 2; i < maxm; i += 1) {
         if (not np[i]) {
             f[i] = i;
             p[pn ++] = i;
         }
-        for (LL j = 0; j < pn; j += 1) {
-            LL k = i * p[j];
+        for (ll j = 0; j < pn; j += 1) {
+            ll k = i * p[j];
             if (k >= maxm) break;
             np[k] = 1;
             if (f[i] % p[j]) f[k] = f[i] * p[j];
@@ -146,58 +146,82 @@ using namespace Dijkstra;
 
 这个是队列实现，有时候改成栈实现会更加快。
 
+可以处理负权边和判定负环回路。
+
 时间复杂度：$O(kE)$
 
 ~~~c++
 namespace SPFA {
-	const int maxn = 200010;
-	struct Edge {
-		int v;
-		int cost;
-		Edge(int _v = 0, int _cost = 0):v(_v), cost(_cost) {}
-	};
-	vector<Edge> g[maxn];
-	void addedge(int u, int v, int w) {
-		g[u].push_back({v, w});
-	}
-	bool vis[maxn]; //在队列标志
-	int cnt[maxn]; //每个点的入队列次数
-	int dis[maxn];
-	bool spfa(int start, int n) {
-		for (int i = 0; i <= n; i++) {
-			vis[i] = false;
-			dis[i] = INF;
-			cnt[i] = 0;
-		}
-		vis[start] = true;
-		dis[start] = 0;
-		queue<int> q;
-		while (!q.empty())
-			q.pop();
-		q.push(start);
-		cnt[start] = 1;
-		while (!q.empty()) {
-			int u = q.front();
-			q.pop();
-			vis[u] = false;
-			for (int i = 0; i < g[u].size(); i++) {
-				int v = g[u][i].v;
-				if (dis[v] > dis[u] + g[u][i].cost) {
-					dis[v] = dis[u] + g[u][i].cost;
+    const int maxn = 200010;
+    struct Edge {
+        int v;
+        int cost;
+        Edge(int _v = 0, int _cost = 0):v(_v), cost(_cost) {}
+    };
+    vector<Edge> g[maxn];2
+    void addedge(int u, int v, int w) {
+        g[u].push_back({v, w});
+    }
+    bool vis[maxn]; //在队列标志
+    int cnt[maxn]; //每个点的入队列次数
+    int dis[maxn];
+    bool spfa(int start, int n) {
+        for (int i = 0; i <= n; i++) {
+            vis[i] = false;
+            dis[i] = INF;
+            cnt[i] = 0;
+        }
+        vis[start] = true;
+        dis[start] = 0;
+        queue<int> q;
+        while (!q.empty())
+            q.pop();
+        q.push(start);
+        cnt[start] = 1;
+        while (!q.empty()) {
+            int u = q.front();
+            q.pop();
+            vis[u] = false;
+            for (int i = 0; i < g[u].size(); i++) {
+                int v = g[u][i].v;
+                if (dis[v] > dis[u] + g[u][i].cost) {
+                    dis[v] = dis[u] + g[u][i].cost;
                     //pre[v] = u; //表示v的前驱节点为u，在更新了权值之后紧接着更新pre数组
-					if (!vis[v]) {
-						vis[v] = true;
-						q.push(v);
-						if (++cnt[v] > n) //cnt[i]为入队列次数，用来判定是否存在负环回路
-							return false;
-					}
-				}
-			}
-		}
-		return true;
-	}
+                    if (!vis[v]) {
+                        vis[v] = true;
+                        q.push(v);
+                        if (++cnt[v] > n) //cnt[i]为入队列次数，用来判定是否存在负环回路
+                            return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
 }
 using namespace SPFA;
+~~~
+
+### Floyd
+
+解决任意两点间的最短路径的一种算法，可以正确处理有向图或负权的最短路径问题，同时也被用于计算有向图的传递闭包。Floyd-Warshall算法的时间复杂度为$O(N^3)$，空间复杂度为$O(N^2)$。
+
+最外层循环相当于用k点作为中转点对全图进行更新。
+
+~~~c++
+namespace Floyd {
+    constexpr int maxn = 1010;
+    ll n, dis[maxn][maxn];
+    void floyd() {
+        for (int k = 1; k <= n; k++) {
+            for (int i = 1; i <= n; i++) {
+                for (int j = 1; j <= n; j++) {
+                    ckmin(dis[i][j], dis[i][k] + dis[k][j]);
+                }
+            }
+        }
+    }
+}
 ~~~
 
 ### 最小环
