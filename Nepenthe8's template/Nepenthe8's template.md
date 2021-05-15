@@ -76,13 +76,77 @@ void Euler() {
 }
 ~~~
 
-
+****
 
 ## 数据机构
 
 ## 图论
 
+### 堆优化Dijkstra
+
+时间复杂度：$O((n + m)logm)$
+
+~~~c++
+namespace Dijkstra {
+    const int maxn = 1000010;
+    struct qnode {
+        int v;
+        int c;
+        qnode(int _v = 0, int _c = 0) : v(_v), c(_c) {}
+        bool operator<(const qnode &t) const {
+            return c < t.c;
+        }
+    };
+    struct Edge {
+        int v, cost;
+        Edge(int _v = 0, int _cost = 0) : v(_v), cost(_cost) {}
+    };
+    vector<Edge> g[maxn];
+    bool vis[maxn];
+    int dis[maxn];
+    //点的编号从1开始
+    void dijkstra(int n, int start) {
+        for (int i = 1; i <= n; i++) {
+            vis[i] = false;
+            dis[i] = INF;
+        }
+        priority_queue<qnode> q;
+        while (!q.empty())
+            q.pop();
+        dis[start] = 0;
+        q.push({start, 0});
+        qnode t;
+        while (!q.empty()) {
+            t = q.top();
+            q.pop();
+            int u = t.v;
+            if (vis[u])
+                continue;
+            vis[u] = true;
+            for (int i = 0; i < g[u].size(); i++) {
+                int v = g[u][i].v;
+                int c = g[u][i].cost;
+                if (!vis[v] && dis[v] > dis[u] + c) {
+                    dis[v] = dis[u] + c;
+                    q.push({v, dis[v]});
+                }
+            }
+        }
+    }
+    void addedge(int u, int v, int w) {
+        g[u].push_back({v, w});
+    }
+}
+using namespace Dijkstra;
+~~~
+
 ### SPFA
+
+只要某个点u的dis[u]得到更新，并且此时不在队列中，就将其入队，目的是为了以u为基点进一步更新它的邻接点v的dis[v]。
+
+这个是队列实现，有时候改成栈实现会更加快。
+
+时间复杂度：$O(kE)$
 
 ~~~c++
 namespace SPFA {
@@ -120,6 +184,7 @@ namespace SPFA {
 				int v = g[u][i].v;
 				if (dis[v] > dis[u] + g[u][i].cost) {
 					dis[v] = dis[u] + g[u][i].cost;
+                    //pre[v] = u; //表示v的前驱节点为u，在更新了权值之后紧接着更新pre数组
 					if (!vis[v]) {
 						vis[v] = true;
 						q.push(v);
@@ -131,12 +196,19 @@ namespace SPFA {
 		}
 		return true;
 	}
-};
+}
+using namespace SPFA;
 ~~~
 
 ### 最小环
 
 [HDU-1599](https://vjudge.gxu.mmmm.mn/problem/HDU-1599)
+
+处理无向图上的最小环。
+
+1. 一个环中编号最大的点为$k$，$i$和$j$是与$k$相邻的两个点，且满足$i<j<k$，则该环的长度为: ans = $d_{ij} + wt_{jk} + wt_{ki}$，$d_{ij}$是**不经过$k$点**的最短距离。
+2. 使用floyd算法，当最外层枚举中转点到k时（尚未开始第$k$次循环），此时最路路径数组$d$还没有使用$k$更新过，那么此时$d_{ij}$就是未经过点k的最短距离。
+3. 循环全部点，更新ans最小值。
 
 ~~~c++
 #include <bits/stdc++.h>
