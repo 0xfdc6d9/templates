@@ -26,3 +26,4 @@
 4. 求最优解问题，先寻找局部最优解，确定使用贪心或dp。
 5. 遇到构造题，先确定最终的目标是什么，慢慢往目标上靠。（比如[Matrix Problem](https://ac.nowcoder.com/acm/contest/16092/M)，需要让构造出来的矩阵具有很强的连通性，想到像手一样的模型）
 6. 逆向思维有时会大大降低实现难度。
+7. 考虑抽屉原理可以起到剪枝的效果。（比如[Shortest Cycle](https://codeforces.com/contest/1206/problem/D)，抽屉原理使得n的规模缩减，从而可以使用floyd算法）
