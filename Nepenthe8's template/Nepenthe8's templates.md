@@ -51,7 +51,29 @@ void hashs_init() { //为了防止查询时出现数组越界的情况，将整�
 
 ## 数学
 
+### 埃氏筛
+
+对于一个合数，肯定会被最小的质因子筛掉，那么对于当前质数$i$来说（合数的话它能筛掉的数已经被该合数的约数筛掉了），应该从$j=i \times i$开始筛，每轮$j = j + i$。
+
+会出现重复筛的情况，比如12，会被2筛一次，被3筛一次。
+
+时间复杂度：$O(nloglogn)$
+
+~~~c++
+constexpr int maxm = 10000010;
+bool np[maxm]; //np[x] = 1表示x不是质数
+void init(int n) {
+    for (int i = 2; i * i <= n; i++) //对于一个合数，总有一个<=sqrt(n)的约数
+        if (!np[i])
+            for (int j = i * i; j <= n; j += i)
+                np[j] = 1;
+}
+~~~
+
+
 ### 欧拉筛
+
+时间复杂度：$O(n)$
 
 ~~~c++
 constexpr int maxm = 10000010;
@@ -59,18 +81,18 @@ ll np[maxm], p[maxm], f[maxm], pn; //not prime(bool), prime[], f[i] is the small
 
 void Euler() {
     f[1] = 1;
-    for (ll i = 2; i < maxm; i += 1) {
+    for (ll i = 2; i < maxm; i += 1) { //循环到maxm是为了把后面的数加入的质数表中
         if (not np[i]) {
             f[i] = i;
-            p[pn ++] = i;
+            p[pn++] = i; //质数表，下标从0开始
         }
         for (ll j = 0; j < pn; j += 1) {
             ll k = i * p[j];
-            if (k >= maxm) break;
-            np[k] = 1;
+            if (k >= maxm) break; //越界
+            np[k] = 1; //标记合数
             if (f[i] % p[j]) f[k] = f[i] * p[j];
             else f[k] = f[i] / p[j];
-            if (i % p[j] == 0) break;
+            if (i % p[j] == 0) break; //当乘数是被乘数的倍数时，停止筛
         }
     }
 }
