@@ -110,25 +110,25 @@ void Euler() {
 
 ~~~c++
 namespace Dijkstra {
-    const int maxn = 1000010;
+    const ll maxn = 1000010;
     struct qnode {
-        int v;
-        int c;
-        qnode(int _v = 0, int _c = 0) : v(_v), c(_c) {}
+        ll v;
+        ll c;
+        qnode(ll _v = 0, ll _c = 0) : v(_v), c(_c) {}
         bool operator<(const qnode &t) const {
             return c < t.c;
         }
     };
     struct Edge {
-        int v, cost;
-        Edge(int _v = 0, int _cost = 0) : v(_v), cost(_cost) {}
+        ll v, cost;
+        Edge(ll _v = 0, ll _cost = 0) : v(_v), cost(_cost) {}
     };
     vector<Edge> g[maxn];
     bool vis[maxn];
-    int dis[maxn];
+    ll dis[maxn];
     //点的编号从1开始
-    void dijkstra(int n, int start) {
-        for (int i = 1; i <= n; i++) {
+    void dijkstra(ll n, ll start) {
+        for (ll i = 1; i <= n; i++) {
             vis[i] = false;
             dis[i] = INF;
         }
@@ -141,13 +141,13 @@ namespace Dijkstra {
         while (!q.empty()) {
             t = q.top();
             q.pop();
-            int u = t.v;
+            ll u = t.v;
             if (vis[u])
                 continue;
             vis[u] = true;
-            for (int i = 0; i < g[u].size(); i++) {
-                int v = g[u][i].v;
-                int c = g[u][i].cost;
+            for (ll i = 0; i < g[u].size(); i++) {
+                ll v = g[u][i].v;
+                ll c = g[u][i].cost;
                 if (!vis[v] && dis[v] > dis[u] + c) {
                     dis[v] = dis[u] + c;
                     q.push({v, dis[v]});
@@ -155,7 +155,7 @@ namespace Dijkstra {
             }
         }
     }
-    void addedge(int u, int v, int w) {
+    void addedge(ll u, ll v, ll w) {
         g[u].push_back({v, w});
     }
 }
@@ -174,38 +174,38 @@ using namespace Dijkstra;
 
 ~~~c++
 namespace SPFA {
-    const int maxn = 200010;
+    const ll maxn = 1000010;
     struct Edge {
-        int v;
-        int cost;
-        Edge(int _v = 0, int _cost = 0):v(_v), cost(_cost) {}
+        ll v;
+        ll cost;
+        Edge(ll _v = 0, ll _cost = 0):v(_v), cost(_cost) {}
     };
     vector<Edge> g[maxn];2
-    void addedge(int u, int v, int w) {
+    void addedge(ll u, ll v, ll w) {
         g[u].push_back({v, w});
     }
     bool vis[maxn]; //在队列标志
-    int cnt[maxn]; //每个点的入队列次数
-    int dis[maxn];
-    bool spfa(int start, int n) {
-        for (int i = 0; i <= n; i++) {
+    ll cnt[maxn]; //每个点的入队列次数
+    ll dis[maxn];
+    bool spfa(ll start, ll n) {
+        for (ll i = 0; i <= n; i++) {
             vis[i] = false;
             dis[i] = INF;
             cnt[i] = 0;
         }
         vis[start] = true;
         dis[start] = 0;
-        queue<int> q;
+        queue<ll> q;
         while (!q.empty())
             q.pop();
         q.push(start);
         cnt[start] = 1;
         while (!q.empty()) {
-            int u = q.front();
+            ll u = q.front();
             q.pop();
             vis[u] = false;
-            for (int i = 0; i < g[u].size(); i++) {
-                int v = g[u][i].v;
+            for (ll i = 0; i < g[u].size(); i++) {
+                ll v = g[u][i].v;
                 if (dis[v] > dis[u] + g[u][i].cost) {
                     dis[v] = dis[u] + g[u][i].cost;
                     //pre[v] = u; //表示v的前驱节点为u，在更新了权值之后紧接着更新pre数组
@@ -261,7 +261,7 @@ namespace Floyd {
 using namespace std;
 using ll = long long;
 const int N = 210;
-const ll INF = 0x3f3f3f3f;
+const ll INF = 0x3f3f3f3f3f3f3f3f;
 template<class T> bool ckmin(T& a, const T& b) { return b < a ? a = b, 1 : 0; }
 
 ll n, m, d[N][N]/* 最短路径 */, wt[N][N]/* 边的权值 */, ans;
