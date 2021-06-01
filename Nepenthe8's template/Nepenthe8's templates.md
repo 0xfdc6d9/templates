@@ -106,6 +106,7 @@ void Euler() {
 ### 堆优化Dijkstra
 
 时间复杂度：$O((n + m)logm)$
+vector的版本，在边数或点数过多的时候可能会MLE：
 
 ~~~c++
 namespace Dijkstra {
@@ -161,6 +162,67 @@ namespace Dijkstra {
 using namespace Dijkstra;
 ~~~
 
+用链式前向星：
+
+~~~c++
+namespace Dijkstra {
+    const ll maxn = 1000010;
+    struct qnode {
+        ll v;
+        ll c;
+        qnode(ll _v = 0, ll _c = 0) : v(_v), c(_c) {}
+        bool operator<(const qnode &t) const {
+            return c > t.c;
+        }
+    };
+    struct Edge {
+        ll v, cost, next;
+        Edge(ll _v = 0, ll _cost = 0, ll _next = 0) : v(_v), cost(_cost), next(_next) {}
+    } g[maxn];
+    // vector<Edge> g[maxn];
+    ll head[N];
+    bool vis[N];
+    ll dis[N];
+    //点的编号从1开始
+    ll d_cnt = 0;
+    void dijkstra(ll n, ll start) {
+        for (ll i = 1; i <= n; i++) {
+            vis[i] = false;
+            dis[i] = INF;
+        }
+        priority_queue<qnode> q;
+        while (!q.empty())
+            q.pop();
+        dis[start] = 0;
+        q.push({start, 0});
+        qnode t;
+        while (!q.empty()) {
+            t = q.top();
+            q.pop();
+            ll u = t.v;
+            if (vis[u])
+                continue;
+            vis[u] = true;
+            for (ll i = head[u]; ~i; i = g[i].next) {
+                ll v = g[i].v;
+                ll c = g[i].cost;
+                if (!vis[v] && dis[v] > dis[u] + c) {
+                    dis[v] = dis[u] + c;
+                    q.push({v, dis[v]});
+                }
+            }
+        }
+    }
+    void addedge(ll u, ll v, ll w) {
+        g[d_cnt].v = v;
+        g[d_cnt].cost = w;
+        g[d_cnt].next = head[u];
+        head[u] = d_cnt++;
+    }
+}
+using namespace Dijkstra;
+~~~
+
 ### SPFA
 
 只要某个点u的dis[u]得到更新，并且此时不在队列中，就将其入队，目的是为了以u为基点进一步更新它的邻接点v的dis[v]。
@@ -179,7 +241,7 @@ namespace SPFA {
         ll cost;
         Edge(ll _v = 0, ll _cost = 0):v(_v), cost(_cost) {}
     };
-    vector<Edge> g[maxn];2
+    vector<Edge> g[maxn];
     void addedge(ll u, ll v, ll w) {
         g[u].push_back({v, w});
     }
