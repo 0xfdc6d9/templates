@@ -98,7 +98,6 @@ void Euler() {
 }
 ~~~
 
-****
 
 ## 数据机构
 
@@ -116,7 +115,7 @@ namespace Dijkstra {
         ll c;
         qnode(ll _v = 0, ll _c = 0) : v(_v), c(_c) {}
         bool operator<(const qnode &t) const {
-            return c < t.c;
+            return c > t.c;
         }
     };
     struct Edge {
