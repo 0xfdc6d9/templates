@@ -49,6 +49,50 @@ void hashs_init() { //为了防止查询时出现数组越界的情况，将整�
 
 值得提一嘴的是，在查询子串哈希值时，不能使用自然溢出时采用的模数，因为要想取出区间[lf, rt]的值，那么我们需要在h[rt]这一位上，将h[lf - 1]累加的哈希值通过左移操作消除掉。而自然溢出无法保证得到的结果能够消除h[lf - 1]之前的影响。
 
+### KMP
+
+~~~c++
+namespace KMP {
+    int next[N];
+    void kmp_pre(string x, int m) {
+        int j = next[0] = -1;
+        int i = 0;
+        while (i < m) {
+            while (-1 != j && x[i] != x[j])
+                j = next[j];
+            next[++i] = ++j;
+        }
+    }
+    void preKMP(string x, int m) {
+        int j = next[0] = -1; //初始化前缀末尾
+        int i = 0; //初始化后缀末尾
+        while (i < m) {
+            while (-1 != j && x[i] != x[j]) //前后缀不相同
+                j = next[j];
+            if (x[++i] == x[++j]) next[i] = next[j]; //前后缀相同
+            else next[i] = j;
+        }
+    }
+    int kmp_count(string x, int m, string y, int n) { //x 是模式串，y 是文本串
+        int j = 0, i = 0, ret = 0;
+        preKMP(x, m);
+        // kmp_pre(x, m);
+        while (i < n) {
+            while (-1 != j && y[i] != x[j])
+                j = next[j];
+            ++i, ++j;
+            if (j >= m) {
+                ++ret;
+                j = next[j];
+            }
+        }
+        return ret;
+    }
+}
+using namespace KMP;
+~~~
+
+
 ## 数学
 
 ### 埃氏筛
@@ -80,6 +124,7 @@ constexpr int maxm = 10000010;
 ll np[maxm], p[maxm], f[maxm], pn; //not prime(bool), prime[], f[i] is the smallest positive number m such that n/m is a square.
 
 void Euler() {
+    np[1] = 1;
     f[1] = 1;
     for (ll i = 2; i < maxm; i += 1) { //循环到maxm是为了把后面的数加入的质数表中
         if (not np[i]) {
@@ -100,6 +145,188 @@ void Euler() {
 
 
 ## 数据机构
+
+### 线段树
+
+~~~c++
+namespace SegTree {
+    using T = long long;
+    const int MAXN = 2e5 + 5, NA = 0; // NA是标记不可用时的值
+    T tree[MAXN * 4], mark[MAXN * 4];
+    int sN;
+    T op(T a, T b) { return a + b; }
+    void upd(int p, T d, int len) //p为当前节点标号，d为待更新的值，len为当前节点包含的区间长度
+    {
+        tree[p] += len * d;
+        // (mark[p] == NA) ? (mark[p] = d) : (mark[p] += d);
+        mark[p] += d;
+    }
+
+    template <class It>
+    void build(It bg, int l, int r, int p)
+    {
+        if (l == r) { tree[p] = *(bg + l - 1); return; };
+        int mid = (l + r) / 2;
+        build(bg, l, mid, p * 2);
+        build(bg, mid + 1, r, p * 2 + 1);
+        tree[p] = op(tree[p * 2], tree[p * 2 + 1]);
+    }
+    template <class It>
+    void build(It bg, It ed) // 这里的bg, ed是迭代器
+    {
+        sN = ed - bg;
+        build(bg, 1, sN, 1);
+    }
+
+    void push_down(int p, int len)
+    {
+        if (mark[p] == NA) return;
+        upd(p * 2, mark[p], len - len / 2);
+        upd(p * 2 + 1, mark[p], len / 2);
+        mark[p] = NA;
+    }
+
+    void update(int l, int r, T d, int p = 1, int cl = 1, int cr = sN) //[l, r]为查询的区间，[cl, cr]为当前节点包含的区间，p为当前节点标号，d为待更新的值
+    {
+        if (cl >= l && cr <= r) return upd(p, d, cr - cl + 1);
+        push_down(p, cr - cl + 1);
+        int mid = (cl + cr) / 2;
+        if (mid >= l) update(l, r, d, p * 2, cl, mid);
+        if (mid < r) update(l, r, d, p * 2 + 1, mid + 1, cr);
+        tree[p] = op(tree[p * 2], tree[p * 2 + 1]);
+    }
+
+    T query(int l, int r, int p = 1, int cl = 1, int cr = sN)
+    {
+        if (cl >= l && cr <= r) return tree[p];
+        push_down(p, cr - cl + 1);
+        int mid = (cl + cr) / 2;
+        if (mid >= r)
+            return query(l, r, p * 2, cl, mid);
+        else if (mid < l)
+            return query(l, r, p * 2 + 1, mid + 1, cr);
+        else
+            return op(query(l, r, p * 2, cl, mid), query(l, r, p * 2 + 1, mid + 1, cr));
+    }
+} // namespace SegTree
+
+using namespace SegTree;
+
+~~~
+
+### fhq_treap
+
+~~~c++
+namespace fhq_treap {
+    #define getSZ(p) (p ? p->sz : 0)
+    const int MAXN = 200010;
+    struct Node {
+        int key, rk;
+        int sz; //记录以u为根节点的子树有多少节点
+        Node *ls, *rs;
+        void upd() {
+            sz = getSZ(ls) + getSZ(rs) + 1; //左子+右子+自己
+        }
+    } pool[2 * MAXN]/* 节点池 */, *rt;
+    int top; //指向节点池的指针
+    void split(Node *p, Node *&pL, Node *&pR, int x) { //需要改变形态的二叉树参数需要传引用
+        if (!p) {
+            pL = pR = NULL;
+            return;
+        }
+        if (p->key <= x) {
+            pL = p;
+            split(p->rs, pL->rs, pR, x);
+            pL->upd();
+        } else {
+            pR = p;
+            split(p->ls, pL, pR->ls, x);
+            pR->upd();
+        }
+    }
+    void merge(Node *&p, Node *pL, Node *pR) {
+        if (!pL || !pR) { //如果某一个子树已经处理完了
+            p = pL ? pL : pR;
+            return;
+        }
+        if (pL->rk < pR->rk) {
+            p = pL;
+            merge(p->rs, pL->rs, pR);
+        } else {
+            p = pR;
+            merge(p->ls, pL, pR->ls);
+        }
+        p->upd();
+    }
+    Node *newNode(int x) {
+        Node *p = pool + (++top);
+        p->key = x;
+        p->rk = rand();
+        p->sz = 1;
+        return p;
+    }
+    void insert(Node *&rt, int x) {
+        Node *p1, *p2;
+        split(rt, p1, p2, x - 1);
+        merge(rt, p1, newNode(x));
+        merge(rt, rt, p2);
+    }
+    void remove(Node *&rt, int x) {
+        Node *p1, *p2, *p3, *p4;
+        split(rt, p1, p2, x - 1);
+        split(p2, p3, p4, x);
+        merge(p3, p3->ls, p3->rs);
+        merge(p3, p3, p4);
+        merge(rt, p1, p3);
+    }
+
+    int getRank(Node *&rt, int x) {
+        Node *p1, *p2;
+        split(rt, p1, p2, x - 1);
+        int ret = getSZ(p1);
+        merge(rt, p1, p2);
+        return ret; //ret为比x小的数的个数
+    }
+    int kth(Node *p, int rk) {
+        while (p) {
+            if (rk <= getSZ(p->ls)) {
+                p = p->ls;
+            } else if (rk > getSZ(p->ls) + 1) { //当前要查找的rk > 左子树的节点数量 + 自己，说明在右子树之中
+                rk -= getSZ(p->ls) + 1;
+                p = p->rs;
+            } else {
+                return p->key;
+            }
+        }
+        return 0;
+    }
+    int prev(Node *p, int x) {
+        int ret = -INF;
+        while (p) {
+            if (x > p->key) {
+                ckmax(ret, p->key);
+                p = p->rs;
+            } else {
+                p = p->ls;
+            }
+        }
+        return ret;
+    }
+    int next(Node *p, int x) {
+        int ret = INF;
+        while (p) {
+            if (x < p->key) {
+                ckmin(ret, p->key);
+                p = p->ls;
+            } else {
+                p = p->rs;
+            }
+        }
+        return ret;
+    }
+}
+using namespace fhq_treap;
+~~~
 
 ## 图论
 
