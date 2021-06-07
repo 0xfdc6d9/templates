@@ -216,6 +216,7 @@ using namespace SegTree;
 
 ### fhq_treap
 
+#### 普通平衡树
 ~~~c++
 namespace fhq_treap {
     #define getSZ(p) (p ? p->sz : 0)
@@ -323,6 +324,104 @@ namespace fhq_treap {
             }
         }
         return ret;
+    }
+}
+using namespace fhq_treap;
+~~~
+
+在remove函数中，最后的merge写成
+~~~c++
+merge(p2, p3, p4);
+merge(rt, p1, p2);
+~~~
+也可以AC
+
+#### 文艺平衡树
+
+~~~c++
+namespace fhq_treap {
+    #define getSZ(p) (p ? p->sz : 0)
+    const int MAXN = 200010;
+    struct Node {
+        int key, rk;
+        int sz; //记录以u为根节点的子树有多少节点
+        Node *ls, *rs;
+        bool rev;
+        void upd() {
+            sz = getSZ(ls) + getSZ(rs) + 1; //左子+右子+自己
+        }
+        void pushD() {
+            if (!rev)
+                return;
+            if (ls) 
+                ls->rev ^= 1;
+            if (rs)
+                rs->rev ^= 1;
+            rev = 0;
+            swap(ls, rs);
+        }
+    } pool[2 * MAXN]/* 节点池 */, *rt;
+    int top; //指向节点池的指针
+    void split(Node *p, Node *&pL, Node *&pR, int x) { //当fhq-treap用来【维护序列】时，split(p, pL, pR, k)函数的意义变为：将序列p的前k个元素分裂出来成一棵二叉树pL
+        if (!p) {
+            pL = pR = NULL;
+            return;
+        }
+        p->pushD(); //每次操作前先下传标记
+        if (getSZ(p->ls) + 1 <= x) {
+            pL = p;
+            split(p->rs, pL->rs, pR, x - (getSZ(p->ls) + 1));
+            pL->upd();
+        } else {
+            pR = p;
+            split(p->ls, pL, pR->ls, x);
+            pR->upd();
+        }
+    }
+    void merge(Node *&p, Node *pL, Node *pR) { //需要改变形态的二叉树参数需要传引用
+        if (!pL || !pR) { //如果某一个子树已经处理完了
+            p = pL ? pL : pR;
+            return;
+        }
+        pL->pushD();
+        pR->pushD();
+        if (pL->rk < pR->rk) {
+            p = pL;
+            merge(p->rs, pL->rs, pR);
+        } else {
+            p = pR;
+            merge(p->ls, pL, pR->ls);
+        }
+        p->upd();
+    }
+    Node *newNode(int x) {
+        Node *p = pool + (++top);
+        p->key = x;
+        p->rk = rand();
+        p->sz = 1;
+        return p;
+    }
+    void insert(Node *&rt, int x) {
+        Node *p1, *p2;
+        split(rt, p1, p2, x - 1);
+        merge(rt, p1, newNode(x));
+        merge(rt, rt, p2);
+    }
+    void reverse(Node *&rt, int l, int r) {
+        Node *p1, *p2, *p3, *p4;
+        split(rt, p1, p2, l - 1);
+        split(p2, p3, p4, r - l + 1); //取出[l, r]的子树，根节点在p3
+        p3->rev ^= 1; //在根节点打上rev标记
+        merge(p2, p3, p4);
+        merge(rt, p1, p2);
+    }
+    void midOrder(Node *p) { //中序遍历
+        p->pushD();
+        if (p->ls)
+            midOrder(p->ls);
+        cout << p->key << " ";
+        if (p->rs)
+            midOrder(p->rs);
     }
 }
 using namespace fhq_treap;
@@ -592,11 +691,190 @@ int main() {
 }
 ~~~
 
+### 最大流
 
+Dinic算法时间复杂度为$O(V^2E)$，在二分图中为$O(V \sqrt{E})$。
+
+~~~c++
+namespace Dinic {
+    ll n, m, s, t, lv[N], cur[N]; // lv是每个点的层数，cur用于当前弧优化标记增广起点
+    struct Node {
+        ll to, w, next;
+    } g[N];
+    ll head[N], tot;
+
+    inline void init() {
+        memset(head, -1, sizeof(head));
+    }
+
+    void addedge(ll u, ll v, ll w) {
+        g[tot].to = v;
+        g[tot].w = w;
+        g[tot].next = head[u];
+        head[u] = tot++;
+
+        g[tot].to = u;
+        g[tot].w = 0;
+        g[tot].next = head[v];
+        head[v] = tot++;
+    }
+
+    bool bfs() // BFS分层
+    {
+        memset(lv, -1, sizeof(lv));
+        lv[s] = 0;
+        memcpy(cur, head, sizeof(head)); // 当前弧优化初始化
+        queue<ll> q;
+        q.push(s);
+        while (!q.empty()) {
+            ll p = q.front();
+            q.pop();
+            for (ll i = head[p]; ~i; i = g[i].next) {
+                ll to = g[i].to, vol = g[i].w;
+                if (vol > 0 && lv[to] == -1)
+                    lv[to] = lv[p] + 1, q.push(to);
+            }
+        }
+        return lv[t] != -1; // 如果汇点未访问过说明已经无法达到汇点，此时返回false
+    }
+
+    ll dfs(ll p = s, ll flow = INF)
+    {
+        if (p == t)
+            return flow;
+        ll rmn = flow; // 剩余的流量
+        for (ll i = cur[p]; ~i && rmn; i = g[i].next) // 如果已经没有剩余流量则退出
+        {
+            cur[p] = i; // 当前弧优化，更新当前弧
+            ll to = g[i].to, vol = g[i].w;
+            if (vol > 0 && lv[to] == lv[p] + 1) // 往层数高的方向增广
+            {
+                ll c = dfs(to, min(vol, rmn)); // 尽可能多地传递流量
+                rmn -= c; // 剩余流量减少
+                g[i].w -= c; // 更新残余容量
+                g[i ^ 1].w += c;
+            }
+        }
+        return flow - rmn; // 返回传递出去的流量的大小
+    }
+
+    ll dinic() {
+        ll ans = 0;
+        while (bfs())
+            ans += dfs();
+        return ans;
+    }
+}
+using namespace Dinic;
+~~~
 
 ## 搜索
 
 ## 动态规划
+
+### 多重背包
+
+01背包是第$i$种物品可以取0件、取1件。
+
+多重背包是第$i$种物品可以取0件、取1件、取2件、……、取$s_i$件。
+
+那么我们可以将多重背包的问题转化为01背包求解：把第i种物品换成$s_i$件01背包的物品，每件物品的体积为$k*v_i$，价值为$k*w_i$。($0 \leq k \leq s_i$)。这样的时间复杂度为$O(m \sum s_i)$
+
+#### 二进制优化
+
+如果通过二进制拆分第$i$件物品，则可以转化成更少数量的01背包的物品，缩小问题规模。
+
+二进制优化拆分物品数量$s$，$s$件拆分成$logs$件
+
+时间复杂度为$O(m \sum logs_i)$
+
+[P1833 樱花](https://www.luogu.com.cn/problem/P1833)
+
+~~~c++
+pair<ll, ll> ts, te;
+ll n, m, v[N], w[N], top, dp[N];
+
+int main() {
+    scanf("%lld:%lld %lld:%lld %lld", &ts.first, &ts.second, &te.first, &te.second, &n);
+    m = te.first * 60 + te.second - ts.first * 60 - ts.second;
+    for (ll i = 1, t, c, p; i <= n; i++) {
+        scanf("%lld %lld %lld", &t, &c, &p);
+        if (p == 0) {
+            p = 1000000ll;
+        }
+        //二进制拆分，将第i种物品二进制拆分成若干件物品，每件物品的体积和价值乘一个拆分系数，就可以转化为01背包的物品求解
+        /* 如体积为12，拆分系数为1，2，4，5，转化为4件01背包的物品，(v[i], w[i])、(2v[i], 2w[i])、(4v[i], 4w[i])、(5v[i], 5w[i]) */
+        for (ll j = 1; j <= p; j <<= 1) {
+            v[++top] = j * t;
+            w[top] = j * c;
+            p -= j;
+        }
+        if (p) { //剩余
+            v[++top] = p * t;
+            w[top] = p * c;
+        }
+    }
+    for (ll i = 1; i <= top; i++) { //top为进行二进制拆分后物品的数量
+        for (ll j = m; j >= v[i]; j--) {
+            ckmax(dp[j], dp[j - v[i]] + w[i]);
+        }
+    }
+    printf("%lld\n", dp[m]);
+    return 0;
+}
+~~~
+
+#### 单调队列优化
+
+单调队列优化拆分的是背包容量$m$，根据体积$v$的余数，把$dp[0...m]$拆分成$v$个类，使$dp[0...m]$在$O(m)$内完成更新。
+
+时间复杂度为$O(nm)$。
+
+1. 对于滑动窗口范围的理解：$dp[j]$是由前面不超过数量$s$的同类值递推得到的。这就相当于从前面宽度为$s$的窗口挑选最大值来更新当前值。那么使用单调队列来维护窗口最大值，使更新$dp[j]$的次数缩减为1次。
+2. $(k - q[h])/v*w$是还能放入的物品个数，其中$k - q[h]$为背包容量之差。
+3. $dp[k]=$窗口中的max$+$还能放入物品的价值。
+4. $dp[k]$通过属于上一个状态的$g[q[h]]$进行更新，所以窗口在$g$数组上滑动，也就是说$q$中存的是$g$数组的下标。
+5. 判断队尾是否应该出队：若用g[k]比g[q[t]]更新后面f[x]能获得更大的价值，则下式成立（通过移项可以消掉x），队尾出队。
+
+$$
+g[k] + \frac {(x - k) * w} {v} \geq g[q[t]] + \frac {(x - q[t]) * w} {v}
+$$
+
+~~~c++
+pair<ll, ll> ts, te;
+ll n, m, dp[N], g[N], q[N];
+
+int main() {
+    scanf("%lld:%lld %lld:%lld %lld", &ts.first, &ts.second, &te.first, &te.second, &n);
+    m = te.first * 60 + te.second - ts.first * 60 - ts.second;
+    //多重背包 单调队列优化
+    for (ll i = 1, v, w, s; i <= n; i++) {
+        memcpy(g, dp, sizeof(dp)); //由于接下来体积从小到大枚举，所以将dp的上一个状态提前备份到g
+        scanf("%lld %lld %lld", &v, &w, &s); //体积、价值、数量
+        if (s == 0) { //表示属于完全背包的物品
+            s = 1000010ll;
+        }
+        for (ll j = 0; j < v; j++) { //拆分成体积c个类
+            ll h = 0, t = -1;
+            for (ll k = j; k <= m; k += v) { //对每个类使用单调队列
+                //q[h]不在窗口[k-s*v, k-v]内，队头出队
+                if (h <= t && q[h] < k - s * v)
+                    h++;
+                //使用队头最大值更新
+                if (h <= t)
+                    dp[k] = max(g[k], g[q[h]] + (k - q[h]) / v * w);
+                //当前值比队尾值更有价值，队尾出队
+                while (h <= t && g[k] >= g[q[t]] + (k - q[t]) / v * w)
+                    t--;
+                //下标入队，使用下标是为了方便队头出队
+                q[++t] = k;
+            }
+        }
+    }
+    printf("%lld\n", dp[m]);
+    return 0;
+}
+~~~
 
 ## 计算几何
 
