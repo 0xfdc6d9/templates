@@ -429,9 +429,71 @@ using namespace fhq_treap;
 
 ## 图论
 
-### 堆优化Dijkstra
+### Dijkstra
+
+#### 邻接矩阵形式
+
+时间复杂度为$O(n^2)$，在涉及[边的增删](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=47959247)（虚）时比较方便。
+
+~~~c++
+namespace Dijkstra {
+    const int MAXN = 1010;
+    bool vis[MAXN];
+    int pre[MAXN]; //pre[v] = u 表示v的前驱节点为u
+    deque<pair<ll, ll> > road; //最短路径
+    ll g[MAXN][MAXN], dis[MAXN];
+    void dij_init(ll n) { /* 注意邻接矩阵的初始化 */
+        for (ll i = 1; i <= n; i++)
+            for (ll j = 1; j <= n; j++) 
+                if (i == j)
+                    g[i][j] = 0;
+                else
+                    g[i][j] = INF;
+    }
+    void dijkstra(ll n, ll start) {
+        for (ll i = 1; i <= n; i++) {
+            dis[i] = INF, vis[i] = false, pre[i] = -1;
+        }
+        dis[start] = 0;
+        for (ll j = 1; j <= n; j++) {
+            ll u = -1, minn = INF;
+            for (ll i = 1; i <= n; i++) {
+                if (!vis[i] && dis[i] < minn) {
+                    minn = dis[i];
+                    u = i;
+                }
+            }
+            if (u == -1)
+                break;
+            vis[u] = true;
+            for (ll v = 1; v <= n; v++) {
+                if (!vis[v] && dis[u] + g[u][v] < dis[v]) {
+                    dis[v] = dis[u] + g[u][v];
+                    pre[v] = u;
+                }
+            }
+        }
+    }
+    void dij_getRoad(ll end) { //传入终点，得到一条最短路径，存储在road中
+        ll tmp = end;
+        while (pre[tmp] != -1) {
+            road.push_front({pre[tmp], tmp});
+            tmp = pre[tmp];
+        }
+        // for (auto i : road) {
+        //     cout << i.first << " " << i.second << "\n";
+        // }
+    }
+}
+using namespace Dijkstra;
+~~~
+
+#### 堆优化Dijkstra
 
 时间复杂度：$O((n + m)logm)$
+
+##### 使用vector
+
 vector的版本，在边数或点数过多的时候可能会MLE：
 
 ~~~c++
@@ -488,7 +550,7 @@ namespace Dijkstra {
 using namespace Dijkstra;
 ~~~
 
-用链式前向星：
+##### 使用链式前向星
 
 ~~~c++
 namespace Dijkstra {
