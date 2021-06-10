@@ -101,7 +101,7 @@ using namespace KMP;
 
 会出现重复筛的情况，比如12，会被2筛一次，被3筛一次。
 
-时间复杂度：$O(nloglogn)$
+时间复杂度：$O(n\log \log n)$
 
 ~~~c++
 constexpr int maxm = 10000010;
@@ -143,6 +143,144 @@ void Euler() {
 }
 ~~~
 
+### 矩阵快速幂
+
+加速线性递推。
+
+~~~c++
+struct Matrix {
+    ll mat[110][110];
+    Matrix() { memset(mat, 0, sizeof(mat)); }
+    Matrix operator*(const Matrix& b) const {
+        Matrix res;
+        for (ll i = 1; i <= n; i++) 
+            for (ll j = 1; j <= n; j++)
+                for (ll k = 1; k <= n; k++)
+                    res.mat[i][j] = (res.mat[i][j] + mat[i][k] * b.mat[k][j]) % mod;
+        return res;
+    }
+}ans, base;
+
+void init() {
+    for (ll i = 1; i <= n; i++)
+        for (ll j = 1; j <= n; j++) {
+            ll t; cin >> t;
+            ans.mat[i][j] = base.mat[i][j] = t;
+        }
+}
+
+void qpow(ll b) {
+    while (b) {
+        if (b & 1)
+            ans = ans * base;
+        base = base * base;
+        b >>= 1;
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    cin >> n >> k;
+    init();
+    qpow(k - 1);
+    for (ll i = 1; i <= n; i++) {
+        for (ll j = 1; j <= n; j++) {
+            cout << ans.mat[i][j] << " ";
+        }
+        cout << endl;
+    }
+    return 0;
+}
+~~~
+
+### Berlekamp-Massey Algorithm
+
+用于线性递推，时间复杂度为$O(n^2 \log m)$
+
+[P5487 【模板】Berlekamp-Massey算法](https://www.luogu.com.cn/problem/P5487)
+
+[A simple problem](https://ac.nowcoder.com/acm/contest/16976/A)
+
+~~~c++
+#include <bits/stdc++.h>
+using namespace std;
+using ll = long long;
+const int mod = 1000000007; //998244353
+ll powmod(ll a, ll b) { ll res = 1; a %= mod; assert(b >= 0); for (; b; b >>= 1) { if (b & 1) res = res * a % mod; a = a * a % mod; } return res; }
+
+namespace Berlekamp_Massey {
+    constexpr int MAXN = 1e4 + 7;
+    #define rep(i, a, b) for (int i = a; i < b; i++)
+    //              inital value
+    vector<ll> BM(const vector<ll> &s)
+    {
+        int n = s.size(), L = 0, m = 0;
+        vector<ll> C(n), B(n), T;
+        C[0] = B[0] = 1;
+        ll b = 1, d;
+        for (int i = 0; i < n; i++)
+        {
+            m++;
+            d = s[i];
+            for (int j = 1; j <= L; j++)
+                d = (d + C[j] * s[i - j]) % mod;
+            if (!d)
+                continue;
+            T = C;
+            ll coef = d * powmod(b, mod - 2) % mod;
+            for (int j = m; j < n; j++)
+                C[j] = (C[j] + mod - coef * B[j - m] % mod) % mod;
+            if (2 * L > i)
+                continue;
+            L = i + 1 - L;
+            B = T, b = d;
+            m = 0;
+        }
+        C.resize(L + 1), C[0] = 0;
+        for (ll &i : C)
+            i = (mod - i % mod) % mod;
+        return C;
+    }
+    void mul(vector<ll> &rec, ll a[], ll b[], int k)
+    {
+        ll c[MAXN] = {};
+        rep(i, 0, k) rep(j, 0, k)
+            c[i + j] = (c[i + j] + a[i] * b[j]) % mod;
+        for (int i = k * 2 - 2; i >= k; i--)
+            for (int j = 1; j <= k; j++) //use recursion to go back
+                c[i - j] = (c[i - j] + rec[j] * c[i]) % mod;
+        rep(i, 0, k) a[i] = c[i];
+    } //   recursion   initial value   nth item
+    ll linear(vector<ll> &a, vector<ll> &b, ll n)
+    {
+        int k = a.size() - 1;
+        ll res[MAXN] = {}, c[MAXN] = {};
+        c[1] = res[0] = 1;
+        for (; n; n /= 2, mul(a, c, c, k))
+            if (n & 1)
+                mul(a, res, c, k);
+        ll ret = 0;
+        rep(i, 0, k) ret = (ret + b[i] * res[i]) % mod;
+        for (int i = 1; i < a.size(); i++) { //最短线性递推式
+            cout << a[i] << " \n"[i == a.size() - 1];
+        }
+        return ret;
+    }
+}
+using namespace Berlekamp_Massey;
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    ll n, m; cin >> n >> m;
+    vector<ll> F(n);
+    for (int i = 0; i < n; i++) {
+        cin >> F[i];
+    }
+    vector<ll> ans = BM(F);
+    cout << linear(ans, F, m) << "\n";
+    return 0;
+}
+~~~
 
 ## 数据机构
 
@@ -490,7 +628,7 @@ using namespace Dijkstra;
 
 #### 堆优化Dijkstra
 
-时间复杂度：$O((n + m)logm)$
+时间复杂度：$O((n + m) \log m)$
 
 ##### 使用vector
 
@@ -848,7 +986,7 @@ using namespace Dinic;
 
 二进制优化拆分物品数量$s$，$s$件拆分成$logs$件
 
-时间复杂度为$O(m \sum logs_i)$
+时间复杂度为$O(m \sum \log s_i)$
 
 [P1833 樱花](https://www.luogu.com.cn/problem/P1833)
 
