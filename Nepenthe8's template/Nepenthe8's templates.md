@@ -903,7 +903,7 @@ namespace Dinic {
     } g[N];
     ll head[N], tot;
 
-    inline void init() {
+    inline void init() { //建边之前先初始化！
         memset(head, -1, sizeof(head));
     }
 
@@ -1075,6 +1075,136 @@ int main() {
     return 0;
 }
 ~~~
+
+### 数位dp
+
+数位dp主要解决与数位有关的问题。
+
+其基本的思想就是记忆化搜索保存搜索过的状态，通过从高位到低位暴力枚举能在每个数位上出现的数，搜索出某一区间$[L, R]$内的数，在搜索的过程中更新要求的答案。
+
+比如求$[L, R]$区间内满足某种性质的数的数量，即计数问题时，我们先利用前缀和思想转化为求$[1, L - 1]$，$[1, R]$两个区间的问题，然后将数字按数位拆分出来，进行数位dp。
+
+[ZJOI2010数字计数](https://www.luogu.com.cn/problem/P2602)
+
+题意：给定两个正整数$a$和$b$，求在$[a, b]$中的所有整数中，每个数码(digit)各出现了多少次。
+
+limit表示前面是否都贴着放。
+
+lead表示前面是否都是前导0。
+
+~~~c++
+const int N = 66;
+ll a[N];
+ll dp[N][N][2][2];
+ll len, nowd;
+
+ll dfs(ll pos, ll cnt, bool limit, bool lead) {
+    if (pos == len)
+        return cnt;
+    auto &d = dp[pos][cnt][limit][lead];
+    if (d != -1)
+        return d;
+    ll mx = limit ? a[pos] : 9;
+    ll ret = 0;
+    for (ll i = 0; i <= mx; i++) {
+        if (lead && i == 0)
+            ret += dfs(pos + 1, cnt, limit && i == mx, 1);
+        else 
+            ret += dfs(pos + 1, cnt + (i == nowd), limit && i == mx, 0); //让他搜下去
+    }
+    d = ret;
+    return ret;
+}
+
+ll solve(ll x) {
+    memset(a, 0, sizeof(a));
+    memset(dp, -1, sizeof(dp));
+    len = 0;
+    while (x) {
+        a[len++] = x % 10;
+        x /= 10;
+    }
+    reverse(a, a + len); //从高位到低位存储
+    return dfs(0, 0, 1, 1);
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    ll a, b; cin >> a >> b;
+    for (ll i = 0; i <= 9; i++) {
+        nowd = i;
+        cout << solve(b) - solve(a - 1) << " "; //要找[1, x]范围内满足条件的数
+    }
+    return 0;
+}
+~~~
+
+[CF276D](https://codeforces.com/contest/276/submission/119204461)
+
+题意：在区间$[L, R]$中找出两个数$a$、$b$$(a \leq b)$,使得$a \oplus b$达到最大。
+
+$lb$表示是否贴着数位的下边界放、$rb$表示是否贴着数位的上边界放，这样可以保证枚举的数都是在$[L, R]$区间范围内。
+
+二进制不太明显，我们考虑八进制数
+
+~~~
+1 2 3 4 5
+      ^
+      |
+      i
+假设枚举到第3位（0-index），x表示当前数位枚举的下界，y表示当前数位枚举的上界。
+x = lb ? lf[3] : 0
+y = lb ? rt[3] : 7(因为是8进制数)
+那么接下来会枚举当前数位能填的数：
+for (i = x; i <= y; i++)
+	dfs(..., ..., lb && i == x, rb && i == y)
+如果到i + 1位，lb标记为false，只可能是在第i位中填入了一个比下界大的数，那么从第i + 1位开始就可以任意填数，都会比下界的限制要大，即当前下界可以从0开始。
+如果到i + 1位，rb标记为false，只可能是在第i位中填入了一个比上界小的数，那么从第i + 1位开始就可以任意填数，都会比上界的限制要小，即当前上界可以达到7。
+~~~
+
+可以看出，填入的数字保证在$[lf, rt]$区间内。
+
+~~~c++
+const int N = 66;
+ll lf[N], rt[N], cnt, cnt1, cnt2, dp[N][2][2][2][2];
+
+ll dfs(ll pos, bool lb0, bool rb0, bool lb1, bool rb1) {
+    if (pos == cnt)
+        return 0;
+    auto &d = dp[pos][lb0][rb0][lb1][rb1];
+    if (d != -1)
+        return d;
+    ll res = 0;
+    for (ll i = lb0 ? lf[pos] : 0; i <= (rb0 ? rt[pos] : 1); i++) { //三目运算符的优先级比赋值号高，比比较运算符低
+        for (ll j = lb1 ? lf[pos] : 0; j <= (rb1 ? rt[pos] : 1); j++) {
+            ckmax(res, ((i ^ j) << (cnt - pos - 1)) + dfs(pos + 1, lb0 && i == lf[pos], rb0 && i == rt[pos], lb1 && j == lf[pos], rb1 && j == rt[pos]));
+        }
+    }
+    d = res;
+    return res;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    memset(dp, -1, sizeof(dp));
+    ll a, b; cin >> a >> b;
+    while (a) {
+        lf[cnt1++] = a & 1;
+        a >>= 1;
+    }
+    while (b) {
+        rt[cnt2++] = b & 1;
+        b >>= 1;
+    }
+    cnt = max(cnt1, cnt2);
+    reverse(lf, lf + cnt);
+    reverse(rt, rt + cnt);
+    cout << dfs(0, true, true, true, true) << "\n";
+    return 0;
+}
+~~~
+
+
 
 ## 计算几何
 
