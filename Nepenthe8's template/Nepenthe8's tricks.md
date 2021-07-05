@@ -93,6 +93,7 @@ $$
 4. 数组开小了（省赛
 5. 爆int
 6. 是否多组样例
+7. 划分区间时特别注意最后一块（可能没有处理完，如[Silly Mistake](https://codeforces.com/contest/1253/problem/B))
 
 ### lower_bound
 返回第一个值大于lower_bound

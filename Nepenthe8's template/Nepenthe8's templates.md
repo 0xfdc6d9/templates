@@ -1,5 +1,7 @@
 # Nepenthe8's template
 
+[TOC]
+
 ## 字符串处理
 
 ### 字符串哈希
@@ -624,6 +626,64 @@ int main() {
 }
 ~~~
 
+### 莫队
+
+莫队可以解决一类 **离线区间询问** 问题，适用性极为广泛。同时将其加以扩展，便能处理树上路径询问（树上莫队）以及支持修改（带修莫队）操作。
+
+假设 **区间长度n** 与 **询问数量m** 同阶，那么对于序列上的区间询问问题，如果从 [l,r] 的答案能够 $O(1)$ 扩展到 [l+1,r]/[l-1,r]/[l,r-1]/[l,r+1]（即支持 O(1) insert/remove 维护信息）的答案，那么可以在 $O(N\sqrt N)$ 的复杂度内求出所有询问的答案。
+
+做法：所有询问离线后排序，顺序处理每个询问，暴力从上一个区间的答案转移到下一个区间答案。
+
+#### 普通莫队
+
+~~~c++
+ll pos[N];
+//以左端点 lf 所在块的编号 pos[lf] = lf/B 为第一关键字，右端点 rt 为第二关键字从小->大排序。
+struct inq {
+    ll lf, rt, id;
+    bool operator<(const inq &t) const {
+        if (pos[lf] != pos[t.lf])
+            return pos[lf] < pos[t.lf];
+        else return rt < t.rt;
+    }
+} q[N];
+
+ll n, m, a[N], ans[N], nowAns;
+
+void update(ll pos, ll sign) { //O(1)
+    
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    cin >> n;
+    ll B = sqrt(n);
+    cin >> m;
+    for (ll i = 1; i <= n; i++) {
+        cin >> a[i];
+        pos[i] = i / B;
+    }
+    for (ll i = 0; i < m; i++) {
+        cin >> q[i].lf >> q[i].rt;
+        q[i].id = i;
+    }
+    sort(q, q + m);
+    for (ll i = 0, l = 1, r = 0; i < m; i++) {
+        while (l < q[i].lf) update(l++, -1);
+        while (l > q[i].lf) update(--l, +1); //+1为要加入到当前维护的区间中
+        while (r < q[i].rt) update(++r, +1);
+        while (r > q[i].rt) update(r--, -1);
+        ans[q[i].id] = nowAns;
+    }
+    for (ll i = 0; i < m; i++) {
+        
+    }
+    return 0;
+}
+~~~
+
+
+
 ## 图论
 
 ### Dijkstra
@@ -1027,8 +1087,6 @@ namespace Dinic {
 using namespace Dinic;
 ~~~
 
-## 搜索
-
 ## 动态规划
 
 ### 多重背包
@@ -1263,7 +1321,7 @@ int main() {
 }
 ~~~
 
-
+值得注意的是，我们在利用前缀和性质的时候，留心判断lf - 1是否已经超出了数据范围，比如[P4124 [CQOI2016]手机号码](https://www.luogu.com.cn/problem/P4124)。
 
 ## 计算几何
 
