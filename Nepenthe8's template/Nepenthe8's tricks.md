@@ -85,6 +85,7 @@ $$
 5. 遇到构造题，先确定最终的目标是什么，慢慢往目标上靠。（比如[Matrix Problem](https://ac.nowcoder.com/acm/contest/16092/M)，需要让构造出来的矩阵具有很强的连通性，想到像手一样的模型）
 6. 逆向思维有时会大大降低实现难度。
 7. 考虑抽屉原理可以起到剪枝的效果。（比如[Shortest Cycle](https://codeforces.com/contest/1206/problem/D)，抽屉原理使得n的规模缩减，从而可以使用floyd算法）
+8. 模拟样例的时候尽量写出表达式，以便看出规律。按照模拟出来的表达式写代码，变量名不要误写成常数。（如[C - Sweets Eating](https://codeforces.com/contest/1253/problem/C)）
 
 #### 这为什么会WA呢？
 1. 特判。（n=0, n=1?)
@@ -94,6 +95,7 @@ $$
 5. 爆int
 6. 是否多组样例
 7. 划分区间时特别注意最后一块（可能没有处理完，如[Silly Mistake](https://codeforces.com/contest/1253/problem/B))
+8. 注意在更新答案的时候是不是在if中才更新，如果在if中是不是能够保证结果能够得到更新。（常见于dp中
 
 ### lower_bound
 返回第一个值大于lower_bound
