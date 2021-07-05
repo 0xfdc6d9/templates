@@ -634,6 +634,13 @@ int main() {
 
 做法：所有询问离线后排序，顺序处理每个询问，暴力从上一个区间的答案转移到下一个区间答案。
 
+莫队的~~玄学~~优化：
+
+1. 奇偶性优化（因为顺序发生了变化所以调试起来不是很方便）
+2. 移动指针的常数压缩
+3. 块长
+4. int/long long
+
 #### 普通莫队
 
 ~~~c++
@@ -1326,3 +1333,72 @@ int main() {
 ## 计算几何
 
 ## 其他
+
+### 快读
+
+~~~c++
+inline char nc() {
+    static char buf[1 << 25], *p1 = buf, *p2 = buf;
+    return p1 == p2 && (p2 = (p1 = buf) + fread(buf, 1, 1 << 25, stdin), p1 == p2) ? EOF : *p1++;
+}
+
+template <class T>
+inline void read(T &sum) {
+    char ch = nc(); int tf = 0; sum = 0;
+    while ((ch < '0' || ch > '9') && (ch != '-')) 
+        ch = nc();
+    tf = ((ch == '-') && (ch = nc()));
+    while (ch >= '0' && ch <= '9')
+        sum = sum * 10 + (ch - 48), ch = nc();
+    (tf) && (sum = -sum);
+}
+template <class A, class... B> void read(A &a, B &...b) { read(a); read(b...); }
+
+template <class T>
+inline void print(T x) {
+    if (x < 0)
+        x = ~x + 1, putchar('-');
+    if (x > 9)
+        print(x / 10);
+    putchar(x % 10 + '0');
+}
+~~~
+
+### __int128
+
+128整数的输入输出
+
+~~~c++
+inline __int128 read() {
+    __int128 x = 0, f = 1;
+    char ch = getchar();
+    while (ch < '0' || ch > '9') {
+        if (ch == '-')
+            f = -1;
+        ch = getchar();
+    }
+    while (ch >= '0' && ch <= '9') {
+        x = x * 10 + ch - '0';
+        ch = getchar();
+    }
+    return x * f;
+}
+
+inline void write(__int128 x) {
+    if (x < 0) {
+        putchar('-');
+        x = -x;
+    }
+    if (x > 9)
+        write(x / 10);
+    putchar(x % 10 + '0');
+}
+
+int main() {
+    __int128 a = read();
+    __int128 b = read();
+    write(a + b);
+    return 0;
+}
+~~~
+
