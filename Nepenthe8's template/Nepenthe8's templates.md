@@ -357,13 +357,22 @@ using namespace SegTree;
 ### fhq_treap
 
 #### 普通平衡树
+
+【treap】 是一种弱平衡的二叉搜索树。treap 这个单词是 tree 和 heap 的组合，表明 treap 是一种由树和堆组合形成的数据结构。treap 的每个结点上除了关键字 key 之外，还要额外储存一个值 rk (priority)。treap 除了要满足关于**key的BST性质（左子<根<右子，即拍扁序是有序的）之外，还需满足关于rk的小根堆性质**。而 rk 是每个结点建立时随机生成的，因此 treap 是**期望平衡（即高度=logn）**的。
+
+- split(p, pL ,pR, x) 将 **二叉树 p 分裂成 2 棵树 pL 和 pR ，其中 pL 包含所有 <=x 的结点，pR 包含剩下的节点**。
+
+- merge(p, pL, pR) 将 **二叉树 pL 和 pR 重新合并成一棵树 p，注意此处要求 pL 和 pR 的值域是不重叠（没有交叉）的**。由于树的高度是期望log的，split&merge函数的复杂度都是**O(logn)**。并且分裂之后的 pL、pR、以及合并之后的p也同时满足heap性质，它们也是期望平衡的。
+
+由于树的高度是期望log的，split&merge函数的复杂度都是**O(logn)**。并且分裂之后的 pL、pR、以及合并之后的p也同时满足heap性质，它们也是期望平衡的。
+
 ~~~c++
 namespace fhq_treap {
     #define getSZ(p) (p ? p->sz : 0)
     const int MAXN = 200010;
     struct Node {
         int key, rk;
-        int sz; //记录以u为根节点的子树有多少节点
+        int sz; //记录以u为根节点的子树有多少节点 
         Node *ls, *rs;
         void upd() {
             sz = getSZ(ls) + getSZ(rs) + 1; //左子+右子+自己
@@ -372,11 +381,11 @@ namespace fhq_treap {
     int top; //指向节点池的指针
     void split(Node *p, Node *&pL, Node *&pR, int x) { //需要改变形态的二叉树参数需要传引用
         if (!p) {
-            pL = pR = NULL;
+            pL = pR = NULL; //截断不属于这棵树的部分
             return;
         }
         if (p->key <= x) {
-            pL = p;
+            pL = p; //先整个复制过来，接着继续修改多余的部分
             split(p->rs, pL->rs, pR, x);
             pL->upd();
         } else {
@@ -386,7 +395,7 @@ namespace fhq_treap {
         }
     }
     void merge(Node *&p, Node *pL, Node *pR) {
-        if (!pL || !pR) { //如果某一个子树已经处理完了
+        if (!pL || !pR) { //如果某一个子树已经处理完了，直接把剩余的部分接上去
             p = pL ? pL : pR;
             return;
         }
@@ -478,6 +487,10 @@ merge(rt, p1, p2);
 
 #### 文艺平衡树
 
+当fhq-treap用来【维护序列】时，split(p, pL, pR, k)函数的意义变为：**将序列 p 的前k个元素分裂出来成一棵二叉树 pL** ，写法类似。
+
+fhq-treap可以通过split操作把序列中的任意一段[l,r]分裂出来，可以方便地在上面打各种标记。
+
 ~~~c++
 namespace fhq_treap {
     #define getSZ(p) (p ? p->sz : 0)
@@ -502,7 +515,7 @@ namespace fhq_treap {
         }
     } pool[2 * MAXN]/* 节点池 */, *rt;
     int top; //指向节点池的指针
-    void split(Node *p, Node *&pL, Node *&pR, int x) { //当fhq-treap用来【维护序列】时，split(p, pL, pR, k)函数的意义变为：将序列p的前k个元素分裂出来成一棵二叉树pL
+    void split(Node *p, Node *&pL, Node *&pR, int x) {
         if (!p) {
             pL = pR = NULL;
             return;
@@ -566,6 +579,12 @@ namespace fhq_treap {
 }
 using namespace fhq_treap;
 ~~~
+
+维护值域：询问有关数的大小，如第几大。
+
+维护序列：询问关于位置，如区间[l, r]，第pos位。
+
+如果不幸需要debug：空指针、引用（需要改变树形态都需要传引用）、指针该不该指。
 
 ### 主席树
 
