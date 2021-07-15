@@ -1385,7 +1385,7 @@ inline void print(T x) {
 
 ### __int128
 
-128整数的输入输出
+int128整数的输入输出
 
 ~~~c++
 inline __int128 read() {
@@ -1418,6 +1418,34 @@ int main() {
     __int128 b = read();
     write(a + b);
     return 0;
+}
+~~~
+
+### 模拟退火
+
+模拟退火算法是通过赋予搜索过程一种时变且最终趋于零的概率突跳性，从而可有效避免陷入局部极小并最终趋于全局最优的串行结构的优化算法。
+
+算法从某一较高初温出发，伴随温度参数的不断下降,结合一定的概率突跳特性在解空间中随机寻找目标函数的全局最优解，即在局部最优解能概率性地跳出并最终趋于全局最优。
+
+使用时重写f函数和随机生成的点Node即可，注意多次调用SA来减小误差。如果求全局最小值则$de < 0$时接受当前解，如果求全局最大值则$de>0$时接受当前解。
+
+~~~c++
+void SA() {
+    pnow = pans; //初始化
+    double T = 2021; //初始温度
+    while (T > 1e-14) {
+        Node ptmp = {pnow.x + ((rand() << 1) - RAND_MAX) * T, pnow.y + ((rand() << 1) - RAND_MAX) * T, pnow.z + ((rand() << 1) - RAND_MAX) * T}; //球心转移
+        double new_ans = f(ptmp); //计算新解
+        double de = new_ans - ans; //计算新解与当前最优解的插值
+        if (de < 0) { //新解小于当前解则接受
+            pans = ptmp;
+            pnow = ptmp;
+            ans = new_ans;
+        } else if (exp(-de / T) * RAND_MAX > rand()) { //否则以概率接受
+            pnow = ptmp;
+        }
+        T *= delta; //降温
+    }
 }
 ~~~
 
