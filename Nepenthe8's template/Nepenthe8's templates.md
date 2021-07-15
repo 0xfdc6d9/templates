@@ -1449,3 +1449,62 @@ void SA() {
 }
 ~~~
 
+### 三分套三分
+
+比如求[最小球覆盖](https://vjudge.net/problem/Gym-101981D/origin)。显然题目所求的这个半径是一个关于 $x, y, z$ 的函数，即$f(x, y, z) = r$，我们考虑三分套三分求解这个函数的最小值。对于这个函数，无论固定  $x$，固定 $y$，还是固定 $z$，都易证它是一个单峰函数。所以可以先三分一个变量，再固定这个变量，三分另一个变量，来求出最后的答案。
+
+~~~c++
+ll n;
+struct Node {
+    ll x, y, z;
+} p[N];
+double cd[3];
+
+inline double sqr(double x) { return x * x; }
+
+double dis() {
+    double ans = 0;
+    for (ll i = 1; i <= n; i++) {
+        ckmax(ans, sqrt(sqr(cd[0] - p[i].x) + sqr(cd[1] - p[i].y) + sqr(cd[2] - p[i].z)));
+    }
+    return ans;
+}
+
+double d(ll cnt) {
+    if (cnt == 3)
+        return dis();
+    double l = -1e5, r = 1e5, mid1, mid2, f1, f2, ans = 1e18;
+    while (l + eps < r) {
+        mid1 = (l + l + r) / 3; mid2 = (r + mid1) / 2;
+        cd[cnt] = mid1;
+        f1 = d(cnt + 1);
+        cd[cnt] = mid2;
+        f2 = d(cnt + 1);
+        if (f1 < f2) r = mid2, ans = f1;
+        else l = mid1, ans = f2;
+    }
+    return ans;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    cin >> n;
+    for (ll i = 1; i <= n; i++) {
+        cin >> p[i].x >> p[i].y >> p[i].z;
+    }
+    cout << fixed << setprecision(8) << d(0) << "\n";
+    return 0;
+}
+~~~
+
+注意其递归的方式：
+
+~~~
+cnt==1: x		  0                   1
+                /   \               /   \
+cnt==2: y      0     1             0     1
+              / \   / \           / \   / \
+cnt==3: z    0   1 0   1         0   1 0   1
+~~~
+
+这样可以枚举出所有的排列。
