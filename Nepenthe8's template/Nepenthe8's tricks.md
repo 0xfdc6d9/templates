@@ -102,6 +102,7 @@ $$
 7. 划分区间时特别注意最后一块（可能没有处理完，如[Silly Mistake](https://codeforces.com/contest/1253/problem/B))
 8. 注意在更新答案的时候是不是在if中才更新，如果在if中是不是能够保证结果能够得到更新。（常见于dp中
 9. 运行后直接死机注意是不是内存爆了的问题，比如关于vector的emplace_back函数死循环了。
+10. 多组输入且需要memset的时候数组大小开的精确一些，不然有可能会TLE。
 
 ### lower_bound
 返回第一个值大于lower_bound

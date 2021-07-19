@@ -1351,6 +1351,77 @@ int main() {
 
 ## 计算几何
 
+## 搜索
+
+### IDA*
+
+迭代加深：在DFS的搜索里面，可能会面临一个答案的层数很低，但是DFS搜到了另为一个层数很深的分支里面导致时间很慢，但是又卡BFS的空间，这个时候，可以限制DFS的搜索层数，一次又一次放宽搜索的层数，直到搜索到答案就退出，时间可观，结合了BFS和DFS的优点于一身。
+
+定义函数：
+$$
+F ( x ) = G ( x ) + H ( x )
+$$
+其中G(x)表示已经走过的路，H(x)表示期望走的路。
+
+IDA*就是将F(x)搬到了IDDFS（迭代加深的DFS）上然后加了个可行性剪枝。
+
+估值函数的确定：
+
+1. 估值函数一般是当状态离目标越近时越优，当然是总体趋势，存在个别的。
+2. 估值函数里的参数一般是比较明显的，且每次操作后一般会改变的，一般也会满足第一点。
+3. 参数一般变化是有范围的。
+
+~~~c++
+//P1379 八数码难题
+string st, en = "123804765";
+
+ll depth = 0; //搜索深度
+
+//估价函数
+ll calH(string s) {
+    ll res = 0;
+    for (ll i = 0; i < s.size(); i++) { //每个数字的曼哈顿距离之和
+        if (s[i] == '0')
+            continue;
+        int p = en.find(s[i]);
+        int enx = p / 3, eny = p % 3;
+        int sx = i / 3, sy = i % 3;
+        res += abs(sx - enx) + abs(sy - eny);
+    }
+    return res;
+}
+
+//now为当前步数，pre为上一步的位置，depth为搜索深度
+bool IDA_star(ll now, ll pre) {
+    ll est = calH(st);
+    if (est == 0)
+        return true;
+    if (now + est > depth) //当前步数+估计值>深度限制，立即回溯
+        return false;
+    int pos = st.find('0'), x = pos / 3, y = pos % 3;
+    for (int i = 0; i < 4; i++) {
+        int dx = x + dir[i][0], dy = y + dir[i][1];
+        if (dx < 0 || dx > 2 || dy < 0 || dy > 2 || dx * 3 + dy == pre/* 不走回头路 */)
+            continue;
+        swap(st[pos], st[dx * 3 + dy]);
+        if (IDA_star(now + 1, pos))
+            return true;
+        swap(st[pos], st[dx * 3 + dy]);
+    }
+    return false;
+}
+
+int main() {
+    cin >> st;
+    while (!IDA_star(0, -1))
+        ++depth;
+    cout << depth << "\n";
+    return 0;
+}
+~~~
+
+
+
 ## 其他
 
 ### 快读
