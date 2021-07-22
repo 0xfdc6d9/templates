@@ -119,27 +119,30 @@ void init(int n) {
 
 ### 欧拉筛
 
-时间复杂度：$O(n)$
+时间复杂度：$O(n)$。
+
+注意，在时限比较紧的时候应删除f数组。
 
 ~~~c++
 constexpr int maxm = 10000010;
-ll np[maxm], p[maxm], f[maxm], pn; //not prime(bool), prime[], f[i] is the smallest positive number m such that n/m is a square.
+int p[maxm], f[maxm], pn; //not prime(bool), prime[], f[i] is the smallest positive number m such that n/m is a square.
+bool np[maxm];
 
 void Euler() {
     np[1] = 1;
     f[1] = 1;
-    for (ll i = 2; i < maxm; i += 1) { //循环到maxm是为了把后面的数加入的质数表中
+    for (int i = 2; i < maxm; ++i) { //循环到maxm是为了把后面的数加入的质数表中
         if (not np[i]) {
             f[i] = i;
             p[pn++] = i; //质数表，下标从0开始
         }
-        for (ll j = 0; j < pn; j += 1) {
-            ll k = i * p[j];
+        for (int j : p) {
+            int k = i * j;
             if (k >= maxm) break; //越界
             np[k] = 1; //标记合数
-            if (f[i] % p[j]) f[k] = f[i] * p[j];
-            else f[k] = f[i] / p[j];
-            if (i % p[j] == 0) break; //当乘数是被乘数的倍数时，停止筛
+            if (f[i] % j) f[k] = f[i] * j;
+            else f[k] = f[i] / j;
+            if (i % j == 0) break; //当乘数是被乘数的倍数时，停止筛
         }
     }
 }
