@@ -357,6 +357,27 @@ using namespace SegTree;
 
 ~~~
 
+### 树状数组
+
+~~~c++
+class BIT {
+    BIT () { memset(tr, 0, sizeof(tr)); }
+    ll n, tr[N];
+    void update(ll x, ll k) {
+        for (; x <= n; x += x & -x) { //注意n的取值
+            tr[x] += k;
+        }
+    }
+    ll query(ll x) {
+        ll res = 0ll;
+        for (; x; x -= x & -x) {
+            res += tr[x];
+        }
+        return res;
+    }
+}
+~~~
+
 ### fhq_treap
 
 #### 普通平衡树
