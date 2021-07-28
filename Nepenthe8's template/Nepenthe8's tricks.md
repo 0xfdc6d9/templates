@@ -72,6 +72,22 @@ $$
 ### 注意
 
 1. dfs的中间变量，尤其是还要用于回溯的，老老实实定义成局部变量。比如在[天元突破 红莲螺岩](https://ac.nowcoder.com/acm/contest/16976/F)一题中，如果将dfs中临时记录的变量tmp定义成全局变量，那么在回溯的时候就会[出错](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=47957932)。
+2. 在进行bfs时注意已经走过的点不可能再更新它的最小距离。
+3. bfs时可以通过改变枚举方向的顺序使得在找到最短路径的情况下方向序列的字典序最小。如 [Penguins](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=48251717)。
+
+~~~
+/*(D<L<R<U)
+     U
+   L @ R
+     D
+     D
+     D
+ @LLLD
+ 
+*/
+~~~
+
+3. 
 
 ### 记忆化搜索
 
