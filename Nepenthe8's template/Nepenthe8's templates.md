@@ -287,6 +287,142 @@ int main() {
 }
 ~~~
 
+### FFT
+
+~~~c++
+const int N = 1e6 + 7;
+typedef complex<double> CP;
+const int lim = 1 << 21; //limit << 1，这里提前算出了limit的值为20
+const double Pi = acos(-1);
+const int OFFSET = 500007;
+CP a[lim], b[lim];
+bool vis[lim];
+
+void FFT(CP *x, int lim, int inv) // 板子而已
+{
+    int bit = 1, m;
+    CP stand, now, temp;
+    while ((1 << bit) < lim)
+        ++bit;
+    for (int i = 0; i < lim; ++i)
+    {
+        m = 0;
+        for (int j = 0; j < bit; ++j)
+            if (i & (1 << j))
+                m |= (1 << (bit - j - 1));
+        if (i < m)
+            swap(x[m], x[i]);
+    }
+    for (int len = 2; len <= lim; len <<= 1)
+    {
+        m = len >> 1;
+        stand = CP(cos(2 * Pi / len), inv * sin(2 * Pi / len));
+        for (CP *p = x; p != x + lim; p += len)
+        {
+            now = CP(1, 0);
+            for (int i = 0; i < m; ++i, now *= stand)
+            {
+                temp = now * p[i + m];
+                p[i + m] = p[i] - temp;
+                p[i] = p[i] + temp;
+            }
+        }
+    }
+    if (inv == -1)
+        for (int i = 0; i < lim; ++i)
+            x[i].real(x[i].real() / lim);
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int n, m; cin >> n >> m;
+    for (int i = 0; i < n + 1; i++) {
+        int x; cin >> x;
+        a[i].real(x);
+    }
+    for (int i = 0; i < m + 1; i++) {
+        int x; cin >> x;
+        b[i].real(x);
+    }
+    
+
+    int limit = 1; //把长度补到2的幂，不必担心高次项的系数，因为默认为0
+    while (limit <= n + m)
+        limit <<= 1;
+    FFT(a, limit, 1);
+    FFT(b, limit, 1);
+    for (int i = 0; i < limit; ++i) {
+        a[i] *= b[i];
+    }
+    FFT(a, limit, -1);
+
+    for (int i = 0, x; i <= n + m; i++) { //枚举结果多项式的指数
+        x = (int)floor(a[i].real() + 0.5); //x为每一项的系数
+        cout << x << " \n"[i == limit];
+    }
+    return 0;
+}
+~~~
+
+### NTT
+
+~~~c++
+const int MAXN = 3 * 1e6 + 7;
+ll L, r[MAXN];
+const int P = 998244353, G = 3, Gi = 332748118, OFFSET = 500001;
+ll limit = 1;
+ll powmod(ll a, ll b, ll mod) { ll res = 1; a %= mod; assert(b >= 0); for (; b; b >>= 1) { if (b & 1) res = res * a % mod; a = a * a % mod; } return res; }
+void NTT(ll *A, int type) {
+    for (int i = 0; i < limit; i++)
+        if (i < r[i])
+            swap(A[i], A[r[i]]);
+    for (int mid = 1; mid < limit; mid <<= 1) {
+        ll Wn = powmod(type == 1 ? G : Gi, (P - 1) / (mid << 1), P);
+        for (int j = 0; j < limit; j += (mid << 1)) {
+            ll w = 1;
+            for (int k = 0; k < mid; k++, w = (w * Wn) % P) {
+                ll x = A[j + k], y = w * A[j + k + mid] % P;
+                A[j + k] = (x + y) % P,
+                      A[j + k + mid] = (x - y + P) % P;
+            }
+        }
+    }
+}
+
+int n, m;
+ll a[MAXN], b[MAXN];
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    cin >> n >> m;
+    for (int i = 0; i < n + 1; i++) { //0-index
+        int x; cin >> x;
+        a[i] = x; //给指数为i的系数赋值为x
+    }
+    for (int i = 0; i < m + 1; i++) {
+        int x; cin >> x;
+        b[i] = x;
+    }
+    
+    while (limit <= n + m)
+        limit <<= 1, L++;
+    for (int i = 0; i <= limit; i++)
+        r[i] = (r[i >> 1] >> 1) | (i & 1) << (L - 1);
+    NTT(a, 1);
+    NTT(b, 1);
+    for (int i = 0; i <= limit; i++)
+        a[i] = (a[i] * b[i]) % P;
+    NTT(a, -1);
+    ll inv = powmod(limit, P - 2, P);
+
+    for (int i = 0; i <= n + m; i++) {
+        int x = a[i] * inv % P;
+        cout << x << " \n"[i == n + m];
+    }
+    return 0;
+}
+~~~
+
 ## 数据机构
 
 ### 线段树
