@@ -1,5 +1,64 @@
 # Nepenthe8's tricks
 
+## 模型
+
+### 柱形图最大矩阵面积
+
+给出一个$n \times m$矩阵，要求从中找到每一列都是不下降数列的最大子矩阵，输出它的大小。
+
+使用单调栈解决。[HDU-6957](https://vjudge.net/problem/HDU-6957)
+
+~~~c++
+#include <bits/stdc++.h>
+using namespace std;
+using ll = long long;
+const int N = 2010;
+
+ll n, m;
+ll mp[N][N], h[N][N];
+
+ll cal(ll h[]) {
+    h[m + 1] = 0;
+    stack<ll> sta;
+    ll ans = 0;
+    for (ll i = 1; i <= n; i++) {
+        while (!sta.empty() && h[sta.top()] > h[i]) {
+            ll now_h = h[sta.top()]; //栈顶矩形将会被弹出，以弹出的单个矩形条的高计算矩形面积
+            sta.pop();
+            ans = max(ans, ((i - 1) - (sta.empty() ? 1 : (sta.top() + 1)) + 1) * now_h); //确定左右边界(rt-lf+1)
+        }
+        sta.push(i);
+    }
+    while (!sta.empty()) {
+        ll now_h = h[sta.top()];
+        sta.pop();
+        ans = max(ans, (m - (sta.empty() ? 1 : (sta.top() + 1)) + 1) * now_h); //这里的m为高度数组h的右端点位置
+    }
+    return ans;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int T; cin >> T;
+    while (T--) {
+        cin >> n >> m;
+        for (int i = 1; i <= n; i++)
+            for (int j = 1; j <= m; j++) {
+                cin >> mp[i][j];
+                if (mp[i][j] >= mp[i - 1][j])
+                    h[i][j] = h[i - 1][j] + 1;
+                else
+                    h[i][j] = 1;
+            }
+        ll ans = 0;
+        for (int i = 1; i <= n; i++)
+            ans = max(ans, cal(h[i]));
+        cout << ans << "\n";
+    }
+    return 0;
+}
+~~~
+
 ## 容器
 
 ### deque

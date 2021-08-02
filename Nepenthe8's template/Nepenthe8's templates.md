@@ -94,6 +94,179 @@ namespace KMP {
 using namespace KMP;
 ~~~
 
+### Trie
+
+开的数组大小为字符集大小乘最大字符串长度。
+
+#### 普通字典树
+
+~~~c++
+struct Trie {
+    int nex[N][26], cnt; //从p号点指出的边为c(字符集中的一个字符)的下一个节点编号为nex[p][c]
+    bool exist[N];  // 该结点结尾的字符串是否存在
+    void insert(string s, int l) {  // 插入字符串
+        int p = 0;
+        for (int i = 0; i < l; i++) {
+            int c = s[i] - 'a';
+            if (!nex[p][c]) nex[p][c] = ++cnt;  // 如果没有，就添加结点
+            p = nex[p][c];
+        }
+        exist[p] = 1;
+    }
+    bool find(string s, int l) {  // 查找字符串
+        int p = 0;
+        for (int i = 0; i < l; i++) {
+            int c = s[i] - 'a';
+            if (!nex[p][c]) return 0;
+            p = nex[p][c];
+        }
+        return exist[p];
+    }
+}trie;
+~~~
+
+#### 01字典树
+
+常用于处理异或问题。
+
+[如](https://oj.lfengzheng.cn/problem/1482)：在给定的$N$个整数$A_1$，$A_2$，……，$A_n$中选出两个进行$xor$（异或）运算，求能得到的最大结果。
+
+~~~c++
+struct Trie {
+    int nex[N][2], cnt; //从p号点指出的边为c(字符集中的一个字符)的下一个节点编号为nex[p][c]
+    void insert(int x) {  // 插入字符串
+        int p = 0;
+        for (int i = 31; i >= 0; i--) {
+            int c = x >> i & 1;
+            if (!nex[p][c])
+                nex[p][c] = ++cnt;  // 如果没有，就添加结点
+            p = nex[p][c];
+        }
+    }
+    int cal(int x) {
+        int p = 0;
+        int res = 0;
+        for (int i = 31; i >= 0; i--) {
+            int c = x >> i & 1;
+            if (nex[p][!c]) {
+                res += (1 << i);
+                p = nex[p][!c];
+            }
+            else {
+                p = nex[p][c];
+            }
+        }
+        return res;
+    }
+}trie;
+
+void solve() {
+    read(n);
+    for (int i = 1; i <= n; i++) {
+        read(a[i]);
+        trie.insert(a[i]);
+    }
+    for (int i = 1; i <= n; i++)
+        ckmax(ans, trie.cal(a[i]));
+    write(ans);
+    putchar(10);
+}
+~~~
+
+也常用于处理区间异或问题。
+
+如[HDU 6955. Xor Sum](http://acm.hdu.edu.cn/showproblem.php?pid=6955)
+
+题意：给一个长度为$n$的一个整数序列$a_n$，寻找最短的，满足异或和大于等于$k$的连续子序列。输出子序列的左端点和右端点，若有多个最短长度的连续子序列，输出位置靠前的。不存在满足条件的连续子序列，输出−1。
+
+~~~c++
+int a[N], sum[N], mx[N]/* 经过trie树u节点的最靠右异或前缀和的下标 */;
+int trie[N][2], val[N], tot;
+
+void init() {
+    trie[0][0] = trie[0][1] = 0;
+    tot = 0;
+    memset(mx, 0, sizeof(mx));
+}
+
+void insert(int x, int pos) {
+    int u = 0;
+    for (int i = 31; i >= 0; i--) {
+        int v = (x >> i) & 1; //x在第i位上的数值
+        ckmax(mx[u], pos);
+        if (!trie[u][v]) {
+            ++tot;
+            trie[tot][0] = trie[tot][1] = val[tot] = 0; //init
+            trie[u][v] = tot;
+        }
+        u = trie[u][v];
+    }
+    val[u] = x;
+    ckmax(mx[u], pos);
+}
+
+//id为当前点的标号，sum表示当前搜索路径上两异或前缀和异或得到的区间异或和的前面一部分的大小，i为枚举到其二进制的位置
+int dfs(int id, int sum, int i, int x, int k) {
+    if (sum >= k) {
+        return mx[id];
+    } else if (sum + ((1ll << (i + 1)) - 1) < k) { //如果后面全1都无法大于等于k，剪枝
+        return -1;
+    }
+    int res = -1;
+    if (trie[id][0]) {
+        ckmax(res, dfs(trie[id][0], sum + (x & (1 << i)), i - 1, x, k));
+    }
+    if (trie[id][1]) {
+        ckmax(res, dfs(trie[id][1], sum + ((x & (1 << i)) ^ (1 << i)), i - 1, x, k));
+    }
+    return res;
+}
+
+int query(int x, int k) { //x为1-i的异或前缀和
+    return dfs(0, 0, 31, x, k);
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int T; cin >> T;
+    while (T--) {
+        init();
+        // insert(0, 0);
+        int n, k; cin >> n >> k;
+        for (int i = 1; i <= n; i++) {
+            cin >> a[i];
+            sum[i] = sum[i - 1] ^ a[i];
+        }
+        int minLen = INF;
+        int ans_lf = INF, ans_rt = -INF;
+        for (int i = 1; i <= n; i++) {
+            if (a[i] >= k) { //特判只有一个的情况
+                minLen = 1;
+                ans_lf = ans_rt = i;
+                break;
+            }
+            int lpos = query(sum[i], k);
+            if (lpos != -1 && (sum[lpos] ^ sum[i]) >= k) { //找到了异或和大于等于k的 离当前枚举的右端点 最近的左端点
+                int len = i - lpos;
+                if (len < minLen) { //长度小
+                    minLen = len;
+                    ans_lf = lpos + 1, ans_rt = i;
+                } else if (len == minLen) { //长度小且最靠左
+                    if (lpos + 1 < ans_lf) {
+                        ans_lf = lpos + 1, ans_rt = i;
+                    }
+                }
+            }
+            insert(sum[i], i);
+        }
+        if (minLen == INF)
+            cout << -1 << "\n";
+        else
+            cout << ans_lf << " " << ans_rt << "\n";
+    }
+    return 0;
+}
+~~~
 
 ## 数学
 
