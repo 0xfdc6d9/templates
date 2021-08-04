@@ -270,7 +270,9 @@ int main() {
 
 ## 数学
 
-### 埃氏筛
+### 素数筛
+
+#### 埃氏筛
 
 对于一个合数，肯定会被最小的质因子筛掉，那么对于当前质数$i$来说（合数的话它能筛掉的数已经被该合数的约数筛掉了），应该从$j=i \times i$开始筛，每轮$j = j + i$。
 
@@ -290,7 +292,7 @@ void init(int n) {
 ~~~
 
 
-### 欧拉筛
+#### 欧拉筛
 
 时间复杂度：$O(n)$。
 
@@ -595,6 +597,28 @@ int main() {
     return 0;
 }
 ~~~
+
+### 数论分块
+
+整除分块应用于类似如下的这个式子：
+$$
+\sum_{i = 1}^{n} ⌊\frac{n}{i}⌋
+$$
+存在$O (\sqrt n)$的解法。
+
+打表可以发现$\frac{n}{i}$的值呈现块状分布，且对于任意一个块，它的最后一个数都在$n/(n/i)$位置上。
+
+于是可以这样$O (\sqrt n)$的处理：
+
+~~~cpp
+for (int l = 1, r; l <= n; l = r + 1) {
+    r = n / (n / l); //每一块最后一个数的位置
+    ans += (r - l + 1) * (n / l); //每一块的个数*每一块的值
+    cout << ans << endl;
+}
+~~~
+
+例题：[F - Fair Distribution](https://codeforces.com/gym/103055/problem/F)。
 
 ## 数据机构
 
@@ -1036,6 +1060,51 @@ int main() {
     }
     for (ll i = 0; i < m; i++) {
         
+    }
+    return 0;
+}
+~~~
+
+### ST表
+
+ST表常用于解决**可重复贡献问题**。常见的可重复贡献问题有：区间最值、区间按位和、区间按位或、区间GCD等。二而像区间和这样的问题就不是可重复贡献问题。
+
+ST表预处理的时间复杂度为$O(n \log n)$，查询的时间复杂度为$O(1)$。
+
+~~~c++
+//查询区间最大值、最小值
+int a[100001] = {};
+int lg[100001] = {-1};
+int maxn[50][100001] = {};
+int minn[50][100001] = {};
+
+int cal(int l, int r) {
+    int len = lg[r - l + 1];
+    return max(maxn[len][l], maxn[len][r - (1 << len) + 1]) - min(minn[len][l], minn[len][r - (1 << len) + 1]);
+}
+
+int main()
+{
+    int n = 0, m = 0;
+    scanf("%d%d", &n, &m);
+    for (int i = 1; i <= n; i++)
+    {
+        scanf("%d", &a[i]);
+        lg[i] = lg[i / 2] + 1;
+        maxn[0][i] = a[i];
+        minn[0][i] = a[i];
+    }
+    for (int i = 1; i <= lg[n]; i++)
+    {
+        for (int j = 1; j + (1 << i) - 1 <= n; j++)
+        {
+            maxn[i][j] = max(maxn[i - 1][j], maxn[i - 1][j + (1 << (i - 1))]);
+            minn[i][j] = min(minn[i - 1][j], minn[i - 1][j + (1 << (i - 1))]);
+        }
+    }
+    while (m--) {
+        int l, r; cin >> l >> r;
+        cout << cal(l, r) << "\n";
     }
     return 0;
 }
