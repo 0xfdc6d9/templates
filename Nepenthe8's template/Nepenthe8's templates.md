@@ -296,28 +296,27 @@ void init(int n) {
 
 时间复杂度：$O(n)$。
 
-注意，在时限比较紧的时候应删除f数组。
-
 ~~~c++
 constexpr int maxm = 10000010;
-int p[maxm], f[maxm], pn; //not prime(bool), prime[], f[i] is the smallest positive number m such that n/m is a square.
-bool np[maxm];
+int p[maxm], pn; //prime[]
+bool np[maxm]; //not prime(bool)
+// int f[maxm]; //f[i] is the smallest positive number m such that n/m is a square.
 
 void Euler() {
     np[1] = 1;
-    f[1] = 1;
-    for (int i = 2; i < maxm; ++i) { //循环到maxm是为了把后面的数加入的质数表中
+    // f[1] = 1;
+    for (int i = 2; i < maxm; ++i) { //循环到maxm是为了把后面的数加入的质数表中，同时筛掉合数
         if (not np[i]) {
-            f[i] = i;
+            // f[i] = i;
             p[pn++] = i; //质数表，下标从0开始
         }
         for (int j : p) {
             int k = i * j;
             if (k >= maxm) break; //越界
             np[k] = 1; //标记合数
-            if (f[i] % j) f[k] = f[i] * j;
-            else f[k] = f[i] / j;
-            if (i % j == 0) break; //当乘数是被乘数的倍数时，停止筛
+            // if (f[i] % j) f[k] = f[i] * j;
+            // else f[k] = f[i] / j;
+            if (i % j == 0) break; //当乘数i是被乘数的倍数时，停止筛
         }
     }
 }
