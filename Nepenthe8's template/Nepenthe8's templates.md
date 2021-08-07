@@ -322,6 +322,47 @@ void Euler() {
 }
 ~~~
 
+#### miller_robin素数测试
+
+~~~c++
+const ll test_i64[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022};
+const int test_i32[] = {2, 7, 61};
+ll qpow(ll x, ll n, ll mod)
+{
+    ll c = 1;
+    for (x %= mod; n; n /= 2, x = x * x % mod)
+        if (n & 1)
+            c = c * x % mod;
+    return c;
+}
+int miller_robin(ll n) //素数返回1，合数返回0
+{
+    if (n == 2)
+        return 1;
+    if (n % 2 == 0 || n < 2)
+        return 0;
+    ll m = n - 1, q = 0;
+    while (m % 2 == 0)
+        m /= 2, q++;
+    for (int a : test_i32)
+    {
+        if (a >= n)
+            break;
+        ll x = qpow(a, m, n);
+        for (int i = 0; i < q; i++)
+        {
+            ll x1 = x * x % n;
+            if (x1 == 1 && x != 1 && x != n - 1)
+                return 0;
+            x = x1;
+        }
+        if (x != 1)
+            return 0;
+    }
+    return 1;
+}
+~~~
+
 ### 矩阵快速幂
 
 加速线性递推。
