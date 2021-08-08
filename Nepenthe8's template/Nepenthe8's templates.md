@@ -127,7 +127,7 @@ struct Trie {
 
 #### 01字典树
 
-常用于处理异或问题。
+常用于处理异或或者按位贪心问题。
 
 [如](https://oj.lfengzheng.cn/problem/1482)：在给定的$N$个整数$A_1$，$A_2$，……，$A_n$中选出两个进行$xor$（异或）运算，求能得到的最大结果。
 
@@ -173,7 +173,7 @@ void solve() {
 }
 ~~~
 
-也常用于处理区间异或问题。
+常用于处理区间异或问题。
 
 如[HDU 6955. Xor Sum](http://acm.hdu.edu.cn/showproblem.php?pid=6955)
 
@@ -231,7 +231,7 @@ int main() {
     int T; cin >> T;
     while (T--) {
         init();
-        // insert(0, 0);
+        insert(0, 0);
         int n, k; cin >> n >> k;
         for (int i = 1; i <= n; i++) {
             cin >> a[i];
@@ -263,6 +263,81 @@ int main() {
             cout << -1 << "\n";
         else
             cout << ans_lf << " " << ans_rt << "\n";
+    }
+    return 0;
+}
+~~~
+
+#### 可持久化01trie
+
+[luoguP4735 最大异或和](https://www.luogu.com.cn/problem/P4735)
+
+给定一个非负整数序列 ${a}$，初始长度为$n$。
+
+有 $m$ 个操作，有以下两种操作类型：
+
+1. `A x`：添加操作，表示在序列末尾添加一个数 $x$，序列的长度 $n+1$。
+2. `Q l r x`：询问操作，你需要找到一个位置 $p$，满足$l \le p \le r$，使得： $a[p] \oplus a[p + 1] \oplus ... \oplus a[N] \oplus x$ 最大，输出最大是多少。
+
+~~~c++
+struct Trie {
+    static const int MAXN = 600010;
+    int tot, rt[MAXN], ch[MAXN * 33][2], val[MAXN * 33]/* 出现次数 */;
+    //从p号点指出的边为0/1的下一个节点编号为ch[p][c]
+    int insert(int lst, int x) { //前一版本的根节点，添加的值
+        int rt = ++tot, p = rt;
+        for(int i = 28; i >= 0; i --) {
+            int c = (x >> i) & 1;
+            ch[p][c] = ++ tot, ch[p][c ^ 1] = ch[lst][c ^ 1]; //复制另一边的
+            p = ch[p][c], lst = ch[lst][c]; 
+            val[p] = val[lst] + 1;
+        }
+        return rt;
+    }
+    int query(int o1, int o2, int v) { //o1和o2版本
+        int ret = 0;
+        for (int i = 28; i >= 0; i--) {
+            int t = (v >> i) & 1;
+            if (val[ch[o1][!t]] - val[ch[o2][!t]]) //有出现过
+                ret += (1 << i), o1 = ch[o1][!t], o2 = ch[o2][!t]; //尽量向不同的地方跳
+            else
+                o1 = ch[o1][t], o2 = ch[o2][t];
+        }
+        return ret;
+    }
+}st;
+
+int n, m;
+int a[N], pre[N];
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    cin >> n >> m;
+    st.rt[0] = st.insert(0, 0);
+    for (int i = 1; i <= n; i++) {
+        cin >> a[i];
+        pre[i] = pre[i - 1] ^ a[i];
+    }
+    for (int i = 1; i <= n; i++) {
+        st.rt[i] = st.insert(st.rt[i - 1], pre[i]);
+    }
+    while (m--) {
+        char op;
+        int l, r, x;
+        cin >> op;
+        if (op == 'A') {
+            ++n;
+            cin >> a[n];
+            pre[n] = pre[n - 1] ^ a[n];
+            st.rt[n] = st.insert(st.rt[n - 1], pre[n]);
+        } else if (op == 'Q') {
+            cin >> l >> r >> x;
+            l -= 2, --r;
+            if (l < 0)
+                cout << st.query(st.rt[r], 0, x ^ pre[n]) << "\n";
+            else
+                cout << st.query(st.rt[r], st.rt[l], x ^ pre[n]) << "\n"; //差分两个历史版本得到区间的trie
+        }
     }
     return 0;
 }
