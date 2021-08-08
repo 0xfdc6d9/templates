@@ -170,7 +170,8 @@ $$
 6. 逆向思维有时会大大降低实现难度。
 7. 考虑抽屉原理可以起到剪枝的效果。（比如[Shortest Cycle](https://codeforces.com/contest/1206/problem/D)，抽屉原理使得n的规模缩减，从而可以使用floyd算法）
 8. 模拟样例的时候尽量写出表达式，以便看出规律。按照模拟出来的表达式写代码，变量名不要误写成常数。（如[C - Sweets Eating](https://codeforces.com/contest/1253/problem/C)）
-9. 关于异或的题牢牢抓住$ a \oplus a = 0$这个性质，考虑转换和抵消。
+9. 有显然的递推式时可以考虑记忆化搜索。（如[HDU - 6983](https://vjudge.net/problem/HDU-6983/origin)）
+10. 关于异或的题牢牢抓住$ a \oplus a = 0$这个性质，考虑转换和抵消。
 
 #### 这为什么会WA呢？
 1. 特判。（n=0, n=1?)
