@@ -1870,7 +1870,7 @@ int main() {
 
 ### 凸包
 
-计算凸包的[周长](https://www.luogu.com.cn/problem/P2742)和[面积](https://vjudge.net/problem/POJ-3348)
+使用Graham算法计算凸包的[周长](https://www.luogu.com.cn/problem/P2742)和[面积](https://vjudge.net/problem/POJ-3348)。
 
 ~~~c++
 struct Point {
@@ -1896,7 +1896,7 @@ bool cmp(Point p1, Point p2) {
 double getC(int cnt) { //cnt为凸包点的个数，返回凸包周长
     double C = 0.0;
     for (int i = 1; i <= cnt; i++)
-        C += dis(st[i], st[i + 1]); //st[]中存着凸包序列，将两两距离累加得到凸包周长
+        C += dis(st[i], st[i + 1]); //st[1, cnt]中存着凸包序列，将两两距离累加得到凸包周长
     return C;
 }
 
