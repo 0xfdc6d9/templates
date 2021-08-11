@@ -59,6 +59,73 @@ int main() {
 }
 ~~~
 
+### 求每个元素产生的逆序对数量
+
+[P3149 - 排序](https://www.luogu.com.cn/problem/P3149)
+
+~~~c++
+#include <bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+const ll N = 300010;
+
+struct Node {
+    ll val, pos; //pos为第几个出现
+    ll opt; //该点贡献的逆序对
+    bool operator<(const Node& t) const {
+        if (val == t.val) return pos < t.pos;
+        else return val < t.val;
+    }
+} a[N];
+ll tr[N], ta[N], atot;
+ll n, m;
+
+ll num[N]; //每个元素的逆序对贡献
+
+void update(ll x, ll k) {
+    for (; x <= n; x += x & -x)
+        tr[x] += k;
+}
+
+ll query(ll x) {
+    ll res = 0;
+    for (; x; x -= x & -x) 
+        res += tr[x];
+    return res;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    //init
+    // memset(tr, 0, sizeof(tr));
+    // atot = 0;
+    
+    cin >> n >> m;
+    for (ll i = 1; i <= n; i++) {
+        cin >> a[i].val;
+        a[i].pos = i;
+        ta[++atot] = a[i].val;
+    }
+
+    sort(ta + 1, ta + 1 + atot);
+    atot = unique(ta + 1, ta + 1 + atot) - ta - 1; //atot为离散后的表长
+
+    for (ll i = n; i >= 1; i--) { //倒着求就可以算出每个点所产生的逆序对的数量
+        a[i].val = lower_bound(ta + 1, ta + 1 + atot, a[i].val) - ta; //离散化，即原来的数->原来的数是第几小的
+        a[i].opt = query(a[i].val - 1); //在他之后还比他小的 即 a[i].val贡献的逆序对数量
+        // cout << a[i].opt << endl;
+        num[i] = a[i].opt;
+        update(a[i].val, 1);
+    }
+    for (int i = 1; i <= n; i++) {
+        cout << num[i] << " \n"[i == n];
+    }
+    return 0;
+}
+~~~
+
+
+
 ## 容器
 
 ### deque

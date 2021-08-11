@@ -1868,6 +1868,77 @@ int main() {
 
 ## 计算几何
 
+### 凸包
+
+计算凸包的[周长](https://www.luogu.com.cn/problem/P2742)和[面积](https://vjudge.net/problem/POJ-3348)
+
+~~~c++
+struct Point {
+    double x, y;
+} p[N], st[N];
+int n;
+
+double check(Point a1, Point a2, Point b1, Point b2) {
+    return (a2.x - a1.x) * (b2.y - b1.y) - (b2.x - b1.x) * (a2.y - a1.y);
+}
+
+double dis(Point p1, Point p2) {
+    return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
+}
+
+bool cmp(Point p1, Point p2) {
+    double res = check(p[1], p1, p[1], p2); //读入数据时保证p[1]是y值最小点
+    if (res > 0 || res == 0 && dis(p[0], p1) < dis(p[0], p2))
+        return 1; //极角排序
+    return 0;
+}
+
+double getC(int cnt) { //cnt为凸包点的个数，返回凸包周长
+    double C = 0.0;
+    for (int i = 1; i <= cnt; i++)
+        C += dis(st[i], st[i + 1]); //st[]中存着凸包序列，将两两距离累加得到凸包周长
+    return C;
+}
+
+double getS(Point a, Point b, Point c) //返回三角形面积
+{
+    return ((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)) / 2;
+}
+
+double getPS(int cnt) //cnt为凸包点的个数，返回多边形面积。必须确保 n>=3，且多边形是凸多边形
+{
+    double sumS = 0;
+    for (int i = 2; i <= cnt - 1; i++)
+        sumS += fabs(getS(st[1], st[i], st[i + 1]));
+    return sumS;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    cin >> n;
+    for (int i = 1; i <= n; i++) {
+        cin >> p[i].x >> p[i].y;
+        if (i != 1 && p[i].y < p[1].y) { //保证p[1]是y值最小点
+            double tmpx = p[1].x, tmpy = p[1].y;
+            p[1].x = p[i].x, p[1].y = p[i].y;
+            p[i].x = tmpx, p[i].y = tmpy;
+        }
+    }
+    sort(p + 2, p + 1 + n, cmp);
+    int cnt = 1; //凸包点的个数
+    st[1] = p[1]; //最低点一定在凸包内
+    for (int i = 2; i <= n; i++) {
+        while (cnt > 1 && check(st[cnt - 1], st[cnt], st[cnt], p[i]) <= 0)
+            cnt--;
+        cnt++;
+        st[cnt] = p[i];
+    }
+    st[cnt + 1] = p[1]; //最后一点回到凸包起点
+
+    return 0;
+}
+~~~
+
 ## 搜索
 
 ### IDA*
