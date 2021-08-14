@@ -1548,7 +1548,7 @@ using namespace std;
 using ll = long long;
 const int N = 210;
 const ll INF = 0x3f3f3f3f3f3f3f3f;
-template<class T> bool ckmin(T& a, const T& b) { return b < a ? a = b, 1 : 0; }
+template <class T> bool ckmin(T &a, const T &b) { return b < a ? a = b, 1 : 0; }
 
 ll n, m, d[N][N]/* 最短路径 */, wt[N][N]/* 边的权值 */, ans;
 
