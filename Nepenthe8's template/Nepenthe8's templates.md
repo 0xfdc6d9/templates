@@ -1229,9 +1229,11 @@ int main()
 
 ## 图论
 
-### Dijkstra
+### 最短路
 
-#### 邻接矩阵形式
+#### Dijkstra
+
+##### 邻接矩阵形式
 
 时间复杂度为$O(n^2)$，在涉及[边的增删](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=47959247)（虚）时比较方便。
 
@@ -1411,7 +1413,7 @@ namespace Dijkstra {
 using namespace Dijkstra;
 ~~~
 
-### SPFA
+#### SPFA
 
 只要某个点u的dis[u]得到更新，并且此时不在队列中，就将其入队，目的是为了以u为基点进一步更新它的邻接点v的dis[v]。
 
@@ -1473,7 +1475,7 @@ namespace SPFA {
 using namespace SPFA;
 ~~~
 
-### Floyd
+#### Floyd
 
 解决任意两点间的最短路径的一种算法，可以正确处理有向图或负权的最短路径问题，同时也被用于计算有向图的传递闭包。Floyd-Warshall算法的时间复杂度为$O(N^3)$，空间复杂度为$O(N^2)$。
 
@@ -1492,6 +1494,41 @@ namespace Floyd {
             }
         }
     }
+}
+~~~
+
+### 最小生成树
+
+~~~c++
+int fa[N];
+struct Edge {
+    int u, v, w;
+} e[N << 1];
+int tot = 0;
+void addedge(int u, int v, int w) {
+    e[tot].u = u;
+    e[tot].v = v;
+    e[tot++].w = w;
+}
+
+int find(int x) { return fa[x] == x ? x : fa[x] = find(fa[x]); }
+
+//传入点数，返回最小生成树的权值，如果不连通返回-1
+int kruskal(int n) {
+    for (int i = 1; i <= n; i++)
+        fa[i] = i;
+    sort(e, e + tot, [](const Edge &A, const Edge &B) { return A.w < B.w; });
+    int cnt = 0, ans = 0;
+    for (int i = 0, u, v, w; i < tot; i++) {
+        u = e[i].u, v = e[i].v, w = e[i].w;
+        int t1 = find(u), t2 = find(v);
+        if (t1 != t2)
+            ans += w, fa[t1] = t2, ++cnt;
+        if (cnt == n - 1)
+            break;
+    }
+    if (cnt == n - 1) return ans;
+    else return -1;
 }
 ~~~
 
