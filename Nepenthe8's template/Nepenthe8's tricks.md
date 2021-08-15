@@ -124,6 +124,12 @@ int main() {
 }
 ~~~
 
+### 运算式带括号的处理
+
+本质上就是将给定的运算数任选两个进行运算，考虑暴力枚举出所有的运算数组合，即可认为是枚举出所有带括号的情况。
+
+如[24dian](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=48558895)。
+
 ## 容器
 
 ### deque
