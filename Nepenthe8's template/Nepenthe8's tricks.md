@@ -179,7 +179,15 @@ $$
 x_1 x_2 = \frac{c}{a}
 $$
 
+### 是否出现分数
 
+如出现分数，将double转为int的过程中将会丢掉小数部分。
+
+~~~c++
+bool curF(double x) { //出现分数？
+    return fabs(ll(x) - x) > eps;
+}
+~~~
 
 ## 计算几何
 
