@@ -391,3 +391,12 @@ std::uniform_int_distribution<> rnd(LF, RT);
 
 //var = rnd(gen);
 ~~~
+
+### __builtin_popcount
+
+__builtin_popcount()用于计算一个 32 位无符号整数有多少个位为1
+
+- __builtin_popcount = int
+- __builtin_popcountl = long int
+- __builtin_popcountll = long long
+
