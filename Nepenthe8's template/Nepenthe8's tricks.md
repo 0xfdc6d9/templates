@@ -130,15 +130,49 @@ int main() {
 
 如[24dian](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=48558895)。
 
-## 容器
+## STL
 
-### deque
+### 容器
+
+#### deque
 
 deque 是一种优化了的、对序列两端元素进行添加和删除操作的基本序列容器。它允许较为快速地随机访问，但它不像 vector 把所有的对象保存在一块连续的内存块，而是采用多个连续的存储块，并且在一个映射结构中保存对这些块及其顺序的跟踪。向 deque 两端添加或删除元素的开销很小。它不需要重新分配空间，所以向末端增加元素比 vector 更有效。
 
 在两端进行push和pop的时间复杂度都为$O(1)$，随机访问的时间复杂度也为$O(1)$。
 
 [参考](https://blog.csdn.net/like_that/article/details/98446479)
+
+### 函数
+
+#### lower_bound()
+
+返回第一个值大于等于x的数的下标。
+
+如果需要在一个降序的序列$a$里面进行二分查找，可以考虑新建一个序列$b$，$b$中存放$a$对应位置的相反数，就可以继续使用lower_bound。
+
+#### __builtin_popcount()
+
+__builtin_popcount()用于计算一个 32 位无符号整数有多少个位为1
+
+- __builtin_popcount = int
+- __builtin_popcountl = long int
+- __builtin_popcountll = long long
+
+#### partial_sum()与adjacent_difference()
+
+partial_sum()用于求前缀和，adjacent_difference()用于求差分。
+
+差分的每次修改都相当于对[L:]区间进行修改。
+
+~~~c++
+int a[5] = {15, 10, 6, 3, 1};
+    int b[5] = {0};
+    int c[5] = {0};
+    adjacent_difference(a, a + 5, b); //15, -5, -4, -3, -2
+    partial_sum(a, a + 5, c); //15, 25, 31, 34, 35
+    for (int i = 0; i < 5; i++)
+        cout << c[i] << ", ";
+~~~
 
 ## 数学
 
@@ -293,11 +327,6 @@ bool curF(double x) { //出现分数？
 9. 运行后直接死机注意是不是内存爆了的问题，比如关于vector的emplace_back函数死循环了。
 10. 多组输入且需要memset的时候数组大小开的精确一些，不然有可能会TLE。
 
-### lower_bound
-返回第一个值大于lower_bound
-
-如果需要在一个降序的序列$a$里面进行二分查找，可以考虑新建一个序列$b$，$b$中存放$a$对应位置的相反数，就可以继续使用lower_bound
-
 ### 单调队列
 
 ~~~c++
@@ -392,11 +421,5 @@ std::uniform_int_distribution<> rnd(LF, RT);
 //var = rnd(gen);
 ~~~
 
-### __builtin_popcount
 
-__builtin_popcount()用于计算一个 32 位无符号整数有多少个位为1
-
-- __builtin_popcount = int
-- __builtin_popcountl = long int
-- __builtin_popcountll = long long
 
