@@ -1236,7 +1236,7 @@ int main()
 ~~~c++
 class Dsu {
 public:
-    static const int MAXN = 2e5 + 7;
+    static const int MAXN = 5e4 + 7;
     int fa[MAXN], rk[MAXN];
     Dsu(int n) {
         for (int i = 1; i <= n; i++)
@@ -1252,6 +1252,7 @@ public:
         if (rk[x] == rk[y] && x != y)
             rk[x]++;
     }
+    bool isSame(int x, int y) { return find(x) == find(y); }
 };
 ~~~
 
@@ -1525,6 +1526,8 @@ namespace Floyd {
 
 ### 最小生成树
 
+#### Kruskal
+
 ~~~c++
 int fa[N];
 struct Edge {
@@ -1556,6 +1559,46 @@ int kruskal(int n) {
     if (cnt == n - 1) return ans;
     else return -1;
 }
+~~~
+
+#### Prim
+
+~~~c++
+namespace Prim{
+/*
+ * 稠密图（|E|接近|V|^2）时使用Prim
+ * Prim 求 MST
+ * 耗费矩阵 cost[][]，标号从 0 开始，0∼n-1
+ * 返回最小生成树的权值，返回 -1 表示原图不连通
+ */
+    const int MAXN = 5010;
+    bool vis[MAXN];
+    ll lowc[MAXN];
+    //点是 [0, n-1]
+    ll prim(ll c[][MAXN], int n) {
+        ll ans = 0;
+        memset(vis, 0, sizeof(vis));
+        vis[0] = true;
+        for (int i = 1; i < n; i++) 
+            lowc[i] = c[0][i];
+        for (int i = 1; i < n; i++) {
+            ll minc = INF;
+            int p = -1;
+            for (int j = 0; j < n; j++)
+                if (!vis[j] && minc > lowc[j])
+                    minc = lowc[j], p = j;
+            if (minc == INF) //原图不连通
+                return -1;
+            ans += minc;
+            vis[p] = true;
+            for (int j = 0; j < n; j++)
+                if (!vis[j] && lowc[j] > c[p][j])
+                    lowc[j] = c[p][j];
+        }
+        return ans;
+    }
+}
+using namespace Prim;
 ~~~
 
 ### 最小环
