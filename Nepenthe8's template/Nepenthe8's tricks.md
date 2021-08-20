@@ -150,6 +150,31 @@ deque 是一种优化了的、对序列两端元素进行添加和删除操作�
 
 如果需要在一个降序的序列$a$里面进行二分查找，可以考虑新建一个序列$b$，$b$中存放$a$对应位置的相反数，就可以继续使用lower_bound。
 
+如果需要在结构体或者vector进行lower_bound和upper_bound，把我们需要查找的数**封装成一个结构体**，才可以在结构体中进行查找。即使我们只需要针对某一维进行查找，也需要把整个结构体构造出来。
+
+~~~c++
+struct Node {
+    int a, b;
+    Node() {}
+    Node(int a, int b) : a(a), b(b) {}
+    bool operator<(const Node m) const { return b < m.b; } //定义比较方式，定义查找哪一维，使用重载运算符，lambda表达式报错
+};
+
+int main() {
+    vector<Node> v;
+    for (int i = 0; i < 10; i++) {
+        v.push_back(Node(10 - i + 1, 2 * i));
+        cout << v[i].a << "  " << v[i].b << endl;
+    }
+    int num; cin >> num;
+    sort(v.begin(), v.end()); //进行二分之前需要排序
+    int pos = lower_bound(v.begin(), v.end(), Node(0, num)) - v.begin(); //需要把我们查找的数封装成一个结构体才能进行查找。
+    // int pos = lower_bound(v.begin(), v.end(), Node(0, num), [](const Node &A, const Node &B) { return A.b < B.b; }) - v.begin();
+    cout << pos << endl;
+    return 0;
+}
+~~~
+
 #### __builtin_popcount()
 
 __builtin_popcount()用于计算一个 32 位无符号整数有多少个位为1
@@ -222,6 +247,12 @@ bool curF(double x) { //出现分数？
     return fabs(ll(x) - x) > eps;
 }
 ~~~
+
+### 同余定理
+
+给定一个正整数 $m$，如果两个整数 $a$ 和 $b$ 满足 $a-b$ 能够被 $m$ 整除，即 $\frac {a-b}{m}$ 得到一个整数，那么就称整数 $a$ 与 $b$ 对模 $m$ 同余，记作 $a≡b$(mod m)。对模 $m$ 同余是整数的一个等价关系。
+
+例题：[D - Integers Have Friends](https://codeforces.com/contest/1549/problem/D)。
 
 ## 计算几何
 
