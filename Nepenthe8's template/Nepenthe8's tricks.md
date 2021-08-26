@@ -308,6 +308,18 @@ bool curF(double x) { //出现分数？
 
 点的限制考虑拆点 https://vjudge.net/solution/32496101。
 
+### 最短路
+
+#### 用 Bellman Ford 求解有限制的最短路问题
+
+「限制最多经过不超过 kk 个点」等价于「限制最多不超过 k + 1 条边」，而解决「有边数限制的最短路问题」是 SPFA 所不能取代 Bellman Ford 算法的经典应用之一（SPFA 能做，但不能直接做）。
+
+Bellman Ford/SPFA 都是基于动态规划，其原始的状态定义为 $f[i][k]$ 代表从起点到 $i$ 点，且经过最多 $k$ 条边的最短路径。这样的状态定义引导我们能够使用 Bellman Ford 来解决有边数限制的最短路问题。
+
+同样多源汇最短路算法 Floyd 也是基于动态规划，其原始的三维状态定义为 $f[i][j][k]$ 代表从点 $i$ 到点 $j$，且经过的所有点编号不会超过 $k$（即可使用点编号范围为 $[1, k]$）的最短路径。这样的状态定义引导我们能够使用 Floyd 求最小环或者求“重心点”（即删除该点后，最短路值会变大）。
+
+[787. K 站中转内最便宜的航班 - 力扣（LeetCode）](https://leetcode-cn.com/problems/cheapest-flights-within-k-stops/)
+
 ## 搜索
 
 ### 注意
