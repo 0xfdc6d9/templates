@@ -438,6 +438,45 @@ int miller_robin(ll n) //素数返回1，合数返回0
 }
 ~~~
 
+### 组合数
+
+[例题](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=48654923&headNav=acm)
+
+~~~c++
+ll fac[N], inv[N];
+void exgcd(int a, int b, ll &x, ll &y) //拓展欧几里得
+{
+    if(b == 0) {
+        x = 1; y = 0;
+        return ;
+    }
+    exgcd(b, a % b, y, x);
+    y -= a / b * x;
+}
+  
+void init_C()
+{
+    fac[0] = 1;
+    for(int i = 1; i < N; ++i)
+        fac[i] = fac[i - 1] * i % mod; //阶乘数组
+    ll x, y;
+    exgcd(fac[N - 1], mod, x, y);
+    inv[N - 1] = (x % mod + mod) % mod;
+    for(int i = N - 2; i; --i) {
+        inv[i] = inv[i + 1] * (i + 1) % mod; //逆元数组
+    }
+}
+  
+ll C(ll n, ll m)
+{
+    if(n == m || m == 0)
+        return 1;
+    if(m > n)
+        return 0;
+    return (fac[n] * inv[m] % mod * inv[n - m] % mod) % mod;
+}
+~~~
+
 ### 矩阵快速幂
 
 加速线性递推。
@@ -1807,6 +1846,95 @@ namespace Dinic {
     }
 }
 using namespace Dinic;
+~~~
+
+### 费用流
+
+类 dinic ，时间复杂度为 $O(f \left | V \right | \left | E \right |)$，$f$ 为最大流量。
+
+~~~c++
+namespace MCMF {
+    const int MAXN = 5007, MAXM = 100010, INF = 0x3f3f3f3f;
+    int head[MAXN], cnt = 1;
+    struct Edge
+    {
+        int to, w, c, next;
+    } edges[MAXM * 2];
+    inline void add(int from, int to, int w, int c)
+    {
+        edges[++cnt] = {to, w, c, head[from]};
+        head[from] = cnt;
+    }
+    inline void addEdge(int from, int to, int w, int c)
+    {
+        add(from, to, w, c);
+        add(to, from, 0, -c);
+    }
+    int s, t, dis[MAXN], cur[MAXN];
+    bool inq[MAXN], vis[MAXN];
+    queue<int> Q;
+    bool SPFA()
+    {
+        while (!Q.empty())
+            Q.pop();
+        copy(head, head + MAXN, cur);
+        fill(dis, dis + MAXN, INF);
+        dis[s] = 0;
+        Q.push(s);
+        while (!Q.empty())
+        {
+            int p = Q.front();
+            Q.pop();
+            inq[p] = 0;
+            for (int e = head[p]; e != 0; e = edges[e].next)
+            {
+                int to = edges[e].to, vol = edges[e].w;
+                if (vol > 0 && dis[to] > dis[p] + edges[e].c)
+                {
+                    dis[to] = dis[p] + edges[e].c;
+                    if (!inq[to])
+                    {
+                        Q.push(to);
+                        inq[to] = 1;
+                    }
+                }
+            }
+        }
+        return dis[t] != INF;
+    }
+    int dfs(int p = s, int flow = INF)
+    {
+        if (p == t)
+            return flow;
+        vis[p] = 1;
+        int rmn = flow;
+        for (int eg = cur[p]; eg && rmn; eg = edges[eg].next)
+        {
+            cur[p] = eg;
+            int to = edges[eg].to, vol = edges[eg].w;
+            if (vol > 0 && !vis[to] && dis[to] == dis[p] + edges[eg].c)
+            {
+                int c = dfs(to, min(vol, rmn));
+                rmn -= c;
+                edges[eg].w -= c;
+                edges[eg ^ 1].w += c;
+            }
+        }
+        vis[p] = 0;
+        return flow - rmn;
+    }
+    int maxflow, mincost;
+    inline void run(int s, int t)
+    {
+        MCMF::s = s, MCMF::t = t;
+        while (SPFA())
+        {
+            int flow = dfs();
+            maxflow += flow;
+            mincost += dis[t] * flow;
+        }
+    }
+} // namespace MCMF
 ~~~
 
 ## 动态规划

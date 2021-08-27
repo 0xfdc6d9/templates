@@ -142,6 +142,19 @@ deque 是一种优化了的、对序列两端元素进行添加和删除操作�
 
 [参考](https://blog.csdn.net/like_that/article/details/98446479)
 
+#### String
+
+常见的构造函数形式
+
+~~~c++
+    string a; //定义一个空字符串
+    string str_1 (str); //构造函数，全部复制
+    string str_2 (str, 2, 5); //构造函数，从字符串str的第2个元素开始，复制5个元素，赋值给str_2
+    string str_3 (ch, 5); //将字符串ch的前5个元素赋值给str_3
+    string str_4 (5,'X'); //将 5 个 'X' 组成的字符串 "XXXXX" 赋值给 str_4
+    string str_5 (str.begin(), str.end()); //复制字符串 str 的所有元素，并赋值给 str_5
+~~~
+
 ### 函数
 
 #### lower_bound()
@@ -201,7 +214,12 @@ int a[5] = {15, 10, 6, 3, 1};
 
 ## 数学
 
+### 注意
+
+1. 模意义下出现减法时及时+mod
+
 ### 二进制拆分
+
 一个数$n$可以拆分为$x$个数字，分别为：
 $$
     2^0,2^1,2^2,...,2^{k - 1},n-2^k+1, 其中k是满足n-2^k+1>0的最大整数
@@ -361,6 +379,7 @@ Bellman Ford/SPFA 都是基于动态规划，其原始的状态定义为 $f[i][k
 8. 模拟样例的时候尽量写出表达式，以便看出规律。按照模拟出来的表达式写代码，变量名不要误写成常数。（如[C - Sweets Eating](https://codeforces.com/contest/1253/problem/C)）
 9. 有显然的递推式时可以考虑记忆化搜索或剪枝。（如[HDU - 6983](https://vjudge.net/problem/HDU-6983/origin)）
 10. 关于异或的题牢牢抓住$ a \oplus a = 0$这个性质，考虑转换和抵消。
+11. Σ式子化简时，可以展开之后再找规律。（[如](https://blog.csdn.net/qq_51354600/article/details/119638157)
 
 #### 这为什么会WA呢？
 1. 特判。（n=0, n=1?)
@@ -468,5 +487,31 @@ std::uniform_int_distribution<> rnd(LF, RT);
 //var = rnd(gen);
 ~~~
 
+### function类模板
 
+~~~c++
+vector<vector<int>> allPathsSourceTarget(vector<vector<int>>& graph) {
+    vector<vector<int>> ans;
+    function<void(int, vector<int>, bitset<20>)> dfs = [&](int x, vector<int> now, bitset<20> vis) {
+    // auto dfs = [&](int x, vector<int> now, bitset<20> vis) { //使用 auto 类型说明符声明的变量不能出现在其自身的初始值设定项中
+        now.emplace_back(x);
+        vis.set(x);
+        if (x == int(graph.size()) - 1) {
+            ans.emplace_back(now);
+            return;
+        }
+        for (int i = 0; i < graph[x].size(); i++) {
+            int v = graph[x][i];
+            if (vis[v])
+                continue;
+            dfs(v, now, vis);
+            vis.reset(x);
+        }
+        return;
+    };
+    bitset<20> bs;
+    dfs(0, {}, bs);
+    return ans;
+}
+~~~
 
