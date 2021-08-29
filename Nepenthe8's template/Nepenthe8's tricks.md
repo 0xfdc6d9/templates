@@ -212,6 +212,23 @@ int a[5] = {15, 10, 6, 3, 1};
         cout << c[i] << ", ";
 ~~~
 
+#### accumulate()
+
+假设 vec 是一个 int 型的 vector 对象，下面的代码：
+
+```c++
+//sum the elements in vec starting the summation with the value 42
+int sum = accumulate(vec.begin() , vec.end() , 42);
+```
+
+将 sum 设置为 vec 的元素之和再加上 42 。
+
+accumulate 带有**三个形参**：头两个形参指定要**累加的元素范围**，第三个形参则是**累加的初值**。
+
+accumulate 函数将它的一个内部变量设置为指定的初始值，然后在此初值上累加输入范围内所有元素的值。accumulate 算法返回累加的结果，**其返回类型就是其第三个实参的类型**。
+
+用于指定累加起始值的第三个参数是必要的，因为accumulate对将要累加的元素类型一无所知，除此之外，没有别的办法创建合适的起始值或者关联的类型。
+
 ## 数学
 
 ### 注意
