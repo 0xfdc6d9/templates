@@ -1366,13 +1366,13 @@ namespace Dijkstra {
 using namespace Dijkstra;
 ~~~
 
-#### 堆优化Dijkstra
+#### 堆优化 Dijkstra
 
 时间复杂度：$O((n + m) \log m)$
 
-##### 使用vector
+##### 使用 vector
 
-vector的版本，在边数或点数过多的时候可能会MLE：
+vector 的版本，在边数或点数过多的时候可能会MLE：
 
 ~~~c++
 namespace Dijkstra {
@@ -1850,7 +1850,9 @@ using namespace Dinic;
 
 ### 费用流
 
-类 dinic ，时间复杂度为 $O(f \left | V \right | \left | E \right |)$，$f$ 为最大流量。
+#### 类 dinic 
+
+时间复杂度为 $O(f \left | V \right | \left | E \right |)$，$f$ 为最大流量。
 
 ~~~c++
 namespace MCMF {
@@ -1935,6 +1937,274 @@ namespace MCMF {
         }
     }
 } // namespace MCMF
+~~~
+
+#### Push-relabel 算法
+
+时间复杂度$O(V^3)$？？？
+
+~~~c++
+#include <bits/stdc++.h>
+using namespace std;
+using ll = long long;
+constexpr const ll LL_INF = 0x3f3f3f3f3f3f3f3f;
+
+template <const int MAXV, class flowUnit, class costUnit, const int SCALE = 8>
+struct PushRelabelMinCostMaxFlow
+{
+    struct Edge
+    {
+        int to;
+        flowUnit cap, resCap;
+        costUnit cost;
+        int rev;
+        Edge(int to, flowUnit cap, costUnit cost, int rev) : to(to), cap(cap), resCap(cap), cost(cost), rev(rev) {}
+    };
+    int cnt[MAXV * 2], h[MAXV], stk[MAXV], top;
+    flowUnit FLOW_EPS, maxFlow, ex[MAXV];
+    costUnit COST_INF, COST_EPS, phi[MAXV], bnd, minCost, negCost;
+    vector<int> hs[MAXV * 2];
+    vector<Edge> adj[MAXV];
+    typename vector<Edge>::iterator cur[MAXV];
+    PushRelabelMinCostMaxFlow(flowUnit FLOW_EPS, costUnit COST_INF, costUnit COST_EPS) : FLOW_EPS(FLOW_EPS), COST_INF(COST_INF), COST_EPS(COST_EPS) {}
+    void addEdge(int v, int w, flowUnit flow, costUnit cost)
+    {
+        if (v == w)
+        {
+            if (cost < 0)
+                negCost += flow * cost;
+
+            return;
+        }
+
+        adj[v].emplace_back(w, flow, cost, int(adj[w].size()));
+        adj[w].emplace_back(v, 0, -cost, int(adj[v].size()) - 1);
+    }
+    void init(int V)
+    {
+        negCost = 0;
+
+        for (int i = 0; i < V; i++)
+            adj[i].clear();
+    }
+    flowUnit getMaxFlow(int V, int s, int t)
+    {
+        auto push = [&](int v, Edge &e, flowUnit df)
+        {
+            int w = e.to;
+
+            if (abs(ex[w]) <= FLOW_EPS && df > FLOW_EPS)
+                hs[h[w]].push_back(w);
+
+            e.resCap -= df;
+            adj[w][e.rev].resCap += df;
+            ex[v] -= df;
+            ex[w] += df;
+        };
+
+        if (s == t)
+            return maxFlow = 0;
+
+        fill(h, h + V, 0);
+        h[s] = V;
+        fill(ex, ex + V, 0);
+        ex[t] = 1;
+        fill(cnt, cnt + V * 2, 0);
+        cnt[0] = V - 1;
+
+        for (int v = 0; v < V; v++)
+            cur[v] = adj[v].begin();
+
+        for (int i = 0; i < V * 2; i++)
+            hs[i].clear();
+
+        for (auto &&e : adj[s])
+            push(s, e, e.resCap);
+
+        if (!hs[0].empty())
+            for (int hi = 0; hi >= 0;)
+            {
+                int v = hs[hi].back();
+                hs[hi].pop_back();
+
+                while (ex[v] > FLOW_EPS)
+                {
+                    if (cur[v] == adj[v].end())
+                    {
+                        h[v] = INT_MAX;
+
+                        for (auto e = adj[v].begin(); e != adj[v].end(); e++)
+                            if (e->resCap > FLOW_EPS && h[v] > h[e->to] + 1)
+                            {
+                                h[v] = h[e->to] + 1;
+                                cur[v] = e;
+                            }
+
+                        cnt[h[v]]++;
+
+                        if (--cnt[hi] == 0 && hi < V)
+                            for (int i = 0; i < V; i++)
+                                if (hi < h[i] && h[i] < V)
+                                {
+                                    cnt[h[i]]--;
+                                    h[i] = V + 1;
+                                }
+
+                        hi = h[v];
+                    }
+                    else if (cur[v]->resCap > FLOW_EPS && h[v] == h[cur[v]->to] + 1)
+                        push(v, *cur[v], min(ex[v], cur[v]->resCap));
+                    else
+                        cur[v]++;
+                }
+
+                while (hi >= 0 && hs[hi].empty())
+                    hi--;
+            }
+
+        return maxFlow = -ex[s];
+    }
+    pair<flowUnit, costUnit> getMaxFlowMinCost(int V, int s = -1, int t = -1)
+    {
+        auto costP = [&](int v, const Edge &e)
+        {
+            return e.cost + phi[v] - phi[e.to];
+        };
+        auto push = [&](int v, Edge &e, flowUnit df, bool pushToStack)
+        {
+            if (e.resCap < df)
+                df = e.resCap;
+
+            int w = e.to;
+            e.resCap -= df;
+            adj[w][e.rev].resCap += df;
+            ex[v] -= df;
+            ex[w] += df;
+
+            if (pushToStack && FLOW_EPS < ex[e.to] && ex[e.to] <= df + FLOW_EPS)
+                stk[top++] = e.to;
+        };
+        auto relabel = [&](int v, costUnit delta)
+        {
+            phi[v] -= delta + bnd;
+        };
+        auto lookAhead = [&](int v)
+        {
+            if (abs(ex[v]) > FLOW_EPS)
+                return false;
+
+            costUnit delta = COST_INF;
+
+            for (auto &&e : adj[v])
+            {
+                if (e.resCap <= FLOW_EPS)
+                    continue;
+
+                costUnit c = costP(v, e);
+
+                if (c < -COST_EPS)
+                    return false;
+                else
+                    delta = min(delta, c);
+            }
+
+            relabel(v, delta);
+            return true;
+        };
+        auto discharge = [&](int v)
+        {
+            costUnit delta = COST_INF;
+
+            for (int i = 0; i < int(adj[v].size()); i++)
+            {
+                Edge &e = adj[v][i];
+
+                if (e.resCap <= FLOW_EPS)
+                    continue;
+
+                if (costP(v, e) < -COST_EPS)
+                {
+                    if (lookAhead(e.to))
+                    {
+                        i--;
+                        continue;
+                    }
+
+                    push(v, e, ex[v], true);
+
+                    if (abs(ex[v]) <= FLOW_EPS)
+                        return;
+                }
+                else
+                    delta = min(delta, costP(v, e));
+            }
+
+            relabel(v, delta);
+            stk[top++] = v;
+        };
+        minCost = 0;
+        bnd = 0;
+        costUnit mul = 2 << __lg(V);
+
+        for (int v = 0; v < V; v++)
+            for (auto &&e : adj[v])
+            {
+                minCost += e.cost * e.resCap;
+                e.cost *= mul;
+                bnd = max(bnd, e.cost);
+            }
+
+        maxFlow = (s == -1 || t == -1) ? 0 : getMaxFlow(V, s, t);
+        fill(phi, phi + V, 0);
+        fill(ex, ex + V, 0);
+
+        while (bnd > 1)
+        {
+            bnd = max(bnd / SCALE, costUnit(1));
+            top = 0;
+
+            for (int v = 0; v < V; v++)
+                for (auto &&e : adj[v])
+                    if (costP(v, e) < -COST_EPS && e.resCap > FLOW_EPS)
+                        push(v, e, e.resCap, false);
+
+            for (int v = 0; v < V; v++)
+                if (ex[v] > FLOW_EPS)
+                    stk[top++] = v;
+
+            while (top > 0)
+                discharge(stk[--top]);
+        }
+
+        for (int v = 0; v < V; v++)
+            for (auto &&e : adj[v])
+            {
+                e.cost /= mul;
+                minCost -= e.cost * e.resCap;
+            }
+
+        return make_pair(maxFlow, (minCost /= 2) += negCost);
+    }
+};
+
+const int MAXN = 405, MAXM = 15005;
+PushRelabelMinCostMaxFlow<MAXN, ll, ll> mcmf(0, LL_INF, 0);
+
+
+int main()
+{
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int n, m; cin >> n >> m;
+    mcmf.init(n);
+    for (int i = 0, s, t, c, w; i < m; i++) {
+        cin >> s >> t >> c >> w;
+        --s, --t;
+        mcmf.addEdge(s, t, c, w);
+    }
+    pair<int, int> ans = mcmf.getMaxFlowMinCost(n, 0, n - 1);
+    cout << ans.first << " " << ans.second << "\n";
+    return 0;
+}
 ~~~
 
 ## 动态规划
@@ -2043,21 +2313,21 @@ int main() {
 }
 ~~~
 
-### 数位dp
+### 数位 dp
 
-数位dp主要解决与数位有关的问题。
+数位 dp 主要解决与数位有关的问题。
 
-其基本的思想就是记忆化搜索保存搜索过的状态，通过从高位到低位暴力枚举能在每个数位上出现的数，搜索出某一区间$[L, R]$内的数，在搜索的过程中更新要求的答案。
+其基本的思想就是记忆化搜索保存搜索过的状态，通过从高位到低位暴力枚举能在每个数位上出现的数，搜索出某一区间 $[L, R]$ 内的数，在搜索的过程中更新要求的答案。
 
-比如求$[L, R]$区间内满足某种性质的数的数量，即计数问题时，我们先利用前缀和思想转化为求$[1, L - 1]$，$[1, R]$两个区间的问题，然后将数字按数位拆分出来，进行数位dp。
+比如求 $[L, R]$ 区间内满足某种性质的数的数量，即计数问题时，我们先利用前缀和思想转化为求 $[1, L - 1]$，$[1, R]$ 两个区间的问题，然后将数字按数位拆分出来，进行数位 dp 。
 
 [ZJOI2010数字计数](https://www.luogu.com.cn/problem/P2602)
 
-题意：给定两个正整数$a$和$b$，求在$[a, b]$中的所有整数中，每个数码(digit)各出现了多少次。
+题意：给定两个正整数 $a$ 和 $b$，求在 $[a, b]$ 中的所有整数中，每个数码(digit)各出现了多少次。
 
-limit表示前面是否都贴着放。
+limit 表示前面是否都贴着放。
 
-lead表示前面是否都是前导0。
+lead 表示前面是否都是前导 0 。
 
 ~~~c++
 const int N = 66;
