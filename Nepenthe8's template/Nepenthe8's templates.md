@@ -847,7 +847,7 @@ using namespace SegTree;
 ### 树状数组
 
 ~~~c++
-class BIT {
+struct BIT {
     BIT () { memset(tr, 0, sizeof(tr)); }
     ll n, tr[N];
     void update(ll x, ll k) {
