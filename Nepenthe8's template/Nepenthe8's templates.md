@@ -862,7 +862,7 @@ class BIT {
         }
         return res;
     }
-}
+};
 ~~~
 
 ### fhq_treap
