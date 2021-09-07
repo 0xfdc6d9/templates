@@ -774,6 +774,35 @@ for (int l = 1, r; l <= n; l = r + 1) {
 
 例题：[F - Fair Distribution](https://codeforces.com/gym/103055/problem/F)。
 
+### BSGS
+
+大步小步算法（baby step giant step，BSGS）是一种用来求解离散对数（即模意义下对数）的算法，即给出 $a^x \equiv b (\mod{m})$ 中 $a$，$b$，$m$的值（这里保证 $a$ 和 $m$ 互质），求解 $x$ 。
+
+~~~c++
+ll BSGS(ll a, ll b, ll m)
+{
+    static unordered_map<ll, ll> hs;
+    hs.clear();
+    ll cur = 1, t = sqrt(m) + 1;
+    for (ll B = 1; B <= t; ++B)
+    {
+        (cur *= a) %= m;
+        hs[b * cur % m] = B; // 哈希表中存B的值
+    }
+    ll now = cur; // 此时cur = a^t
+    for (ll A = 1; A <= t; ++A)
+    {
+        auto it = hs.find(now);
+        if (it != hs.end())
+            return A * t - it->second;
+        (now *= cur) %= m;
+    }
+    return -1; // 没有找到，无解
+}
+~~~
+
+例题：[HDU-6956](https://vjudge.net/problem/HDU-6956)。
+
 ## 数据机构
 
 ### 线段树
