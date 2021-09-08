@@ -873,6 +873,126 @@ using namespace SegTree;
 
 ~~~
 
+[HDU-7116](https://vjudge.net/problem/HDU-7116)
+
+~~~c++
+#include <bits/stdc++.h>
+using namespace std;
+using ll = long long;
+using pii = pair<ll, ll>;
+const double eps = 1e-6;
+const int N = 2e5 + 7;
+// const int N = 7;
+const int INF = 0x3f3f3f3f;
+const int mod = 998244353; //998244353
+const int dir[8][2] = {0, 1, 0, -1, 1, 0, -1, 0,/* dir4 */ -1, -1, -1, 1, 1, -1, 1, 1};
+ll gcd(ll a, ll b) { return b == 0 ? a : gcd(b, a % b); }
+ll powmod(ll a, ll b) { ll res = 1; a %= mod; assert(b >= 0); for (; b; b >>= 1) { if (b & 1) res = res * a % mod; a = a * a % mod; } return res; }
+template <class T> bool ckmin(T &a, const T &b) { return b < a ? a = b, 1 : 0; }
+template <class T> bool ckmax(T &a, const T &b) { return a < b ? a = b, 1 : 0; }
+template <class T> void debug(const string &Name, const T &a) { cerr << "# " << Name << ": " << a << endl; }
+template <class A, class... B> void debug(const string &Name, const A &a, const B &...b) { cerr << "# " << Name << ": " << a << endl; debug(b...); }
+
+inline ll lowbit(ll x) { return x & -x; }
+
+inline int ls(int x) { return x << 1; }
+inline int rs(int x) { return x << 1 | 1; }
+struct Node {
+    int l, r;
+    ll x, sum;
+    int lazy;
+    int flag;
+} tree[N << 2];
+
+void pushD(int p) {
+    if (tree[p].lazy == 0)
+        return;
+    (tree[ls(p)].sum *= powmod(2, tree[p].lazy)) %= mod;
+    (tree[rs(p)].sum *= powmod(2, tree[p].lazy)) %= mod;
+    tree[ls(p)].lazy += tree[p].lazy;
+    tree[rs(p)].lazy += tree[p].lazy;
+    tree[p].lazy = 0;
+}
+
+void pushUp(int p) {
+    tree[p].flag = tree[ls(p)].flag & tree[rs(p)].flag;
+    (tree[p].sum = tree[ls(p)].sum + tree[rs(p)].sum) %= mod;
+}
+
+void buildT(int l, int r, int p = 1) {
+    tree[p].l = l, tree[p].r = r;
+    tree[p].sum = tree[p].lazy = tree[p].flag = 0;
+    if (l == r) {
+        cin >> tree[p].x;
+        tree[p].sum = tree[p].x;
+        if (tree[p].x == lowbit(tree[p].x))
+            tree[p].flag = 1;
+        return;
+    }
+    int mid = (l + r) >> 1;
+    buildT(l, mid, ls(p));
+    buildT(mid + 1, r, rs(p));
+    pushUp(p);
+}
+
+void upd(int l, int r, int p = 1) { //[l, r]为查询区间
+    int cl = tree[p].l, cr = tree[p].r;
+    if (l <= cl && cr <= r && tree[p].flag) { //区间都可以直接乘2
+        (tree[p].sum *= 2) %= mod;
+        ++tree[p].lazy;
+        return;
+    }
+    if (cl == cr) { //暴力修改，最多log次
+        tree[p].x = tree[p].sum = tree[p].x + lowbit(tree[p].sum); //叶子节点才用x，存a[i]，用于判断它是否能够直接乘2
+        if (tree[p].x == lowbit(tree[p].x))
+            tree[p].flag = 1;
+        return;
+    }
+    pushD(p);
+    int mid = (cl + cr) >> 1;
+    if (l <= mid)
+        upd(l, r, ls(p));
+    if (mid + 1 <= r)
+        upd(l, r, rs(p));
+    pushUp(p);
+}
+
+ll query(int l, int r, int p = 1) {
+    int cl = tree[p].l, cr = tree[p].r;
+    if (l <= cl && cr <= r) {
+        return tree[p].sum;
+    }
+    pushD(p);
+    ll ans = 0;
+    int mid = (cl + cr) >> 1;
+    if (l <= mid)
+        (ans += query(l, r, ls(p))) %= mod;
+    if (mid + 1 <= r)
+        (ans += query(l, r, rs(p))) %= mod;
+    return ans;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int T; cin >> T;
+    while (T--) {
+        int n; cin >> n;
+        buildT(1, n);
+        int m; cin >> m;
+        while (m--) {
+            int op, l, r; cin >> op >> l >> r;
+            if (op == 1) 
+                upd(l, r);
+            else 
+                cout << query(l, r) << "\n";
+        }
+    }
+    return 0;
+}
+~~~
+
+
+
 ### 树状数组
 
 ~~~c++
