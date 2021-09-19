@@ -469,10 +469,9 @@ void init_C()
   
 ll C(ll n, ll m)
 {
+    assert(n >= m);
     if(n == m || m == 0)
         return 1;
-    if(m > n)
-        return 0;
     return (fac[n] * inv[m] % mod * inv[n - m] % mod) % mod;
 }
 ~~~
@@ -529,7 +528,7 @@ int main() {
 
 ### Berlekamp-Massey Algorithm
 
-用于线性递推，时间复杂度为$O(n^2 \log m)$
+用于线性递推，时间复杂度为$O(n^2 \log m)$，其中 $n$ 为数列 $P$ 的前 $n$ 项，$m$ 为要求的 $P_m$。
 
 [P5487 【模板】Berlekamp-Massey算法](https://www.luogu.com.cn/problem/P5487)
 
@@ -1370,7 +1369,7 @@ int main() {
 
 ### ST表
 
-ST表常用于解决**可重复贡献问题**。常见的可重复贡献问题有：区间最值、区间按位和、区间按位或、区间GCD等。二而像区间和这样的问题就不是可重复贡献问题。
+ST表常用于解决**可重复贡献问题**。常见的可重复贡献问题有：区间最值、区间按位和、区间按位或、区间GCD等。而像区间和这样的问题就不是可重复贡献问题。
 
 ST表预处理的时间复杂度为$O(n \log n)$，查询的时间复杂度为$O(1)$。
 
@@ -2834,13 +2833,9 @@ void SA() {
 }
 ~~~
 
-### 三分
-
-
-
 ### 三分套三分
 
-比如求[最小球覆盖](https://vjudge.net/problem/Gym-101981D/origin)。显然题目所求的这个半径是一个关于 $x, y, z$ 的函数，即$f(x, y, z) = r$，我们考虑三分套三分求解这个函数的最小值。对于这个函数，无论固定  $x$，固定 $y$，还是固定 $z$，都易证它是一个单峰函数。所以可以先三分一个变量，再固定这个变量，三分另一个变量，来求出最后的答案。
+比如求[最小球覆盖](https://vjudge.net/problem/Gym-101981D)。显然题目所求的这个半径是一个关于 $x, y, z$ 的函数，即$f(x, y, z) = r$，我们考虑三分套三分求解这个函数的最小值。对于这个函数，无论固定  $x$，固定 $y$，还是固定 $z$，都易证它是一个单峰函数。所以可以先三分一个变量，再固定这个变量，三分另一个变量，来求出最后的答案。
 
 ~~~c++
 ll n;
@@ -2864,7 +2859,7 @@ double d(ll cnt) {
         return dis();
     double l = -1e5, r = 1e5, mid1, mid2, f1, f2, ans = 1e18;
     while (l + eps < r) {
-        mid1 = (l + l + r) / 3; mid2 = (r + mid1) / 2;
+        mid1 = l + (r - l) / 3, mid2 = r - (r - l) / 3;
         cd[cnt] = mid1;
         f1 = d(cnt + 1);
         cd[cnt] = mid2;
