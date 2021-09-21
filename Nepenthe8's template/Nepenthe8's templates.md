@@ -102,27 +102,46 @@ using namespace KMP;
 
 ~~~c++
 struct Trie {
-    int nex[N][26], cnt; //从p号点指出的边为c(字符集中的一个字符)的下一个节点编号为nex[p][c]
-    bool exist[N];  // 该结点结尾的字符串是否存在
-    void insert(string s, int l) {  // 插入字符串
-        int p = 0;
-        for (int i = 0; i < l; i++) {
-            int c = s[i] - 'a';
-            if (!nex[p][c]) nex[p][c] = ++cnt;  // 如果没有，就添加结点
-            p = nex[p][c];
-        }
-        exist[p] = 1;
+    int tree[N][26], cnt; //从p号点指出的边为c(字符集中的一个字符)的下一个节点编号为 tree[p][c]
+    int count[N]; //该结点出现的次数
+    bool exist[N]; //该结点结尾的字符串是否存在
+    Trie() {
+        memset(exist, 0, sizeof(exist));
+        memset(tree, 0, sizeof(tree));
+        memset(count, 0, sizeof(count));
+        cnt = 0;
     }
-    bool find(string s, int l) {  // 查找字符串
+    void insert(string s, int l) {
         int p = 0;
         for (int i = 0; i < l; i++) {
             int c = s[i] - 'a';
-            if (!nex[p][c]) return 0;
-            p = nex[p][c];
+            if (!tree[p][c]) //如果没有，就添加结点
+                tree[p][c] = ++cnt;
+            p = tree[p][c];
+            ++count[p];
+        }
+        exist[p] = true;
+    }
+    bool find(string s, int l) {
+        int p = 0;
+        for (int i = 0; i < l; i++) {
+            int c = s[i] - 'a';
+            if (!tree[p][c])
+                return false;
+            p = tree[p][c];
         }
         return exist[p];
     }
-}trie;
+    void del(string s, int l) {
+        int p = 0;
+        for (int i = 0; i < l; i++) {
+            int c = s[i] - 'a';
+            p = tree[p][c];
+            --count[p];
+        }
+        exist[p] = false;
+    }
+} trie;
 ~~~
 
 #### 01字典树
