@@ -1466,24 +1466,26 @@ namespace Dijkstra {
     const int MAXN = 1010;
     bool vis[MAXN];
     int pre[MAXN]; //pre[v] = u 表示v的前驱节点为u
-    deque<pair<ll, ll> > road; //最短路径
-    ll g[MAXN][MAXN], dis[MAXN];
-    void dij_init(ll n) { /* 注意邻接矩阵的初始化 */
-        for (ll i = 1; i <= n; i++)
-            for (ll j = 1; j <= n; j++) 
+    deque<pair<int, int> > road; //最短路径
+    int g[MAXN][MAXN];
+    ll dis[MAXN];
+    void dij_init(int n) { /* 注意邻接矩阵的初始化 */
+        for (int i = 1; i <= n; i++)
+            for (int j = 1; j <= n; j++) 
                 if (i == j)
                     g[i][j] = 0;
                 else
                     g[i][j] = INF;
     }
-    void dijkstra(ll n, ll start) {
-        for (ll i = 1; i <= n; i++) {
+    void dijkstra(int n, int start) {
+        for (int i = 1; i <= n; i++) {
             dis[i] = INF, vis[i] = false, pre[i] = -1;
         }
         dis[start] = 0;
-        for (ll j = 1; j <= n; j++) {
-            ll u = -1, minn = INF;
-            for (ll i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+            int u = -1;
+            ll minn = INF;
+            for (int i = 1; i <= n; i++) {
                 if (!vis[i] && dis[i] < minn) {
                     minn = dis[i];
                     u = i;
@@ -1492,7 +1494,7 @@ namespace Dijkstra {
             if (u == -1)
                 break;
             vis[u] = true;
-            for (ll v = 1; v <= n; v++) {
+            for (int v = 1; v <= n; v++) {
                 if (!vis[v] && dis[u] + g[u][v] < dis[v]) {
                     dis[v] = dis[u] + g[u][v];
                     pre[v] = u;
@@ -1500,8 +1502,8 @@ namespace Dijkstra {
             }
         }
     }
-    void dij_getRoad(ll end) { //传入终点，得到一条最短路径，存储在road中
-        ll tmp = end;
+    void dij_getRoad(int end) { //传入终点，得到一条最短路径，存储在road中
+        int tmp = end;
         while (pre[tmp] != -1) {
             road.push_front({pre[tmp], tmp});
             tmp = pre[tmp];
@@ -1524,25 +1526,26 @@ vector 的版本，在边数或点数过多的时候可能会MLE：
 
 ~~~c++
 namespace Dijkstra {
-    const ll maxn = 1000010;
+    const int maxn = 1000010;
     struct qnode {
-        ll v;
+        int v;
         ll c;
-        qnode(ll _v = 0, ll _c = 0) : v(_v), c(_c) {}
+        qnode(int _v = 0, ll _c = 0) : v(_v), c(_c) {}
         bool operator<(const qnode &t) const {
             return c > t.c;
         }
     };
     struct Edge {
-        ll v, cost;
-        Edge(ll _v = 0, ll _cost = 0) : v(_v), cost(_cost) {}
+        int v;
+        ll cost;
+        Edge(int _v = 0, ll _cost = 0) : v(_v), cost(_cost) {}
     };
     vector<Edge> g[maxn];
     bool vis[maxn];
     ll dis[maxn];
     //点的编号从1开始
-    void dijkstra(ll n, ll start) {
-        for (ll i = 1; i <= n; i++) {
+    void dijkstra(int n, int start) {
+        for (int i = 1; i <= n; i++) {
             vis[i] = false;
             dis[i] = INF;
         }
@@ -1555,12 +1558,12 @@ namespace Dijkstra {
         while (!q.empty()) {
             t = q.top();
             q.pop();
-            ll u = t.v;
+            int u = t.v;
             if (vis[u])
                 continue;
             vis[u] = true;
-            for (ll i = 0; i < g[u].size(); i++) {
-                ll v = g[u][i].v;
+            for (int i = 0; i < g[u].size(); i++) {
+                int v = g[u][i].v;
                 ll c = g[u][i].cost;
                 if (!vis[v] && dis[v] > dis[u] + c) {
                     dis[v] = dis[u] + c;
@@ -1569,7 +1572,7 @@ namespace Dijkstra {
             }
         }
     }
-    void addedge(ll u, ll v, ll w) {
+    void addedge(int u, int v, ll w) {
         g[u].push_back({v, w});
     }
 }
@@ -1580,27 +1583,28 @@ using namespace Dijkstra;
 
 ~~~c++
 namespace Dijkstra {
-    const ll maxn = 1000010;
+    const int maxn = 1000010;
     struct qnode {
-        ll v;
+        int v;
         ll c;
-        qnode(ll _v = 0, ll _c = 0) : v(_v), c(_c) {}
+        qnode(int _v = 0, ll _c = 0) : v(_v), c(_c) {}
         bool operator<(const qnode &t) const {
             return c > t.c;
         }
     };
     struct Edge {
-        ll v, cost, next;
-        Edge(ll _v = 0, ll _cost = 0, ll _next = 0) : v(_v), cost(_cost), next(_next) {}
+        int v, next;
+        ll cost;
+        Edge(int _v = 0, ll _cost = 0, int _next = 0) : v(_v), cost(_cost), next(_next) {}
     } g[maxn];
     // vector<Edge> g[maxn];
-    ll head[N];
+    int head[N];
     bool vis[N];
     ll dis[N];
     //点的编号从1开始
-    ll d_cnt = 0;
-    void dijkstra(ll n, ll start) {
-        for (ll i = 1; i <= n; i++) {
+    int d_cnt = 0;
+    void dijkstra(int n, int start) {
+        for (int i = 1; i <= n; i++) {
             vis[i] = false;
             dis[i] = INF;
         }
@@ -1613,12 +1617,12 @@ namespace Dijkstra {
         while (!q.empty()) {
             t = q.top();
             q.pop();
-            ll u = t.v;
+            int u = t.v;
             if (vis[u])
                 continue;
             vis[u] = true;
-            for (ll i = head[u]; ~i; i = g[i].next) {
-                ll v = g[i].v;
+            for (int i = head[u]; ~i; i = g[i].next) {
+                int v = g[i].v;
                 ll c = g[i].cost;
                 if (!vis[v] && dis[v] > dis[u] + c) {
                     dis[v] = dis[u] + c;
@@ -1627,7 +1631,7 @@ namespace Dijkstra {
             }
         }
     }
-    void addedge(ll u, ll v, ll w) {
+    void addedge(int u, int v, ll w) {
         g[d_cnt].v = v;
         g[d_cnt].cost = w;
         g[d_cnt].next = head[u];
@@ -1653,38 +1657,38 @@ using namespace Dijkstra;
 
 ~~~c++
 namespace SPFA {
-    const ll maxn = 1000010;
+    const int maxn = 1000010;
     struct Edge {
-        ll v;
+        int v;
         ll cost;
-        Edge(ll _v = 0, ll _cost = 0):v(_v), cost(_cost) {}
+        Edge(int _v = 0, ll _cost = 0):v(_v), cost(_cost) {}
     };
     vector<Edge> g[maxn];
-    void addedge(ll u, ll v, ll w) {
+    void addedge(int u, int v, ll w) {
         g[u].push_back({v, w});
     }
     bool vis[maxn]; //在队列标志
-    ll cnt[maxn]; //每个点的入队列次数
+    int cnt[maxn]; //每个点的入队列次数
     ll dis[maxn];
-    bool spfa(ll start, ll n) {
-        for (ll i = 0; i <= n; i++) {
+    bool spfa(int start, int n) {
+        for (int i = 0; i <= n; i++) {
             vis[i] = false;
             dis[i] = INF;
             cnt[i] = 0;
         }
         vis[start] = true;
         dis[start] = 0;
-        queue<ll> q;
+        queue<int> q;
         while (!q.empty())
             q.pop();
         q.push(start);
         cnt[start] = 1;
         while (!q.empty()) {
-            ll u = q.front();
+            int u = q.front();
             q.pop();
             vis[u] = false;
-            for (ll i = 0; i < g[u].size(); i++) {
-                ll v = g[u][i].v;
+            for (int i = 0; i < g[u].size(); i++) {
+                int v = g[u][i].v;
                 if (dis[v] > dis[u] + g[u][i].cost) {
                     dis[v] = dis[u] + g[u][i].cost;
                     //pre[v] = u; //表示v的前驱节点为u，在更新了权值之后紧接着更新pre数组
@@ -1712,7 +1716,14 @@ using namespace SPFA;
 ~~~c++
 namespace Floyd {
     constexpr int maxn = 1010;
-    ll n, dis[maxn][maxn];
+    int n;
+    ll dis[maxn][maxn];
+    void Init() { //先初始化边权数组
+        memset(dis, 0x3f, sizeof(dis));
+        for (int i = 1; i <= n; i++) {
+            dis[i][i] = 0;
+        }
+    }
     void floyd() {
         for (int k = 1; k <= n; k++) {
             for (int i = 1; i <= n; i++) {
@@ -1723,6 +1734,7 @@ namespace Floyd {
         }
     }
 }
+using namespace Floyd;
 ~~~
 
 ### 最小生成树
@@ -2595,7 +2607,9 @@ int main() {
 
 ### 凸包
 
-使用Graham算法计算凸包的[周长](https://www.luogu.com.cn/problem/P2742)和[面积](https://vjudge.net/problem/POJ-3348)。
+使用 Graham 算法计算凸包的[周长](https://www.luogu.com.cn/problem/P2742)和[面积](https://vjudge.net/problem/POJ-3348)。
+
+时间复杂度：$O(n \log n)$，$n$ 为平面上的点的数量。
 
 ~~~c++
 struct Point {
