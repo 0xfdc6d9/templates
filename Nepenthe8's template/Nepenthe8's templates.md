@@ -1388,44 +1388,59 @@ int main() {
 
 ### ST表
 
+以区间最值为例，设 $f[i][j]$ 表示当前区间的 $[i, i + 2^j - 1]$ 内的最值，显然 $f[i][0] = max[i][i] = num_i$ 。
+
+由倍增思想可得，跳 $2^i$ 步相当于先跳 $2^{i - 1}$ 步再跳 $2^{i - 1}$ 步；同理区间 $[i, i+2^j - 1]$ 内的最值相当于是区间 $[i, i + 2^{j - 1} - 1]$ 和 $[i + 2 ^ {j - 1}, i + 2^j - 1]$ 内的最值。
+
+所以可得式子 $f[i][j] = max(f[i][j - 1], f[i + 2^{j - 1}][j - 1])$ 。
+
+则只需要枚举起点（也就是枚举 $i$ ），接着枚举区间长度（也就是枚举 $j$ ），使得整个区间被包进去，就可以构建出ST表了。
+
 ST表常用于解决**可重复贡献问题**。常见的可重复贡献问题有：区间最值、区间按位和、区间按位或、区间GCD等。而像区间和这样的问题就不是可重复贡献问题。
 
 ST表预处理的时间复杂度为$O(n \log n)$，查询的时间复杂度为$O(1)$。
 
+为了[卡常](https://ac.nowcoder.com/acm/contest/11256/K)，一般会调换 $i$、$j$ 两个维度。
+
 ~~~c++
-//查询区间最大值、最小值
-int a[100001] = {};
-int lg[100001] = {-1};
-int maxn[50][100001] = {};
-int minn[50][100001] = {};
-
-int cal(int l, int r) {
-    int len = lg[r - l + 1];
-    return max(maxn[len][l], maxn[len][r - (1 << len) + 1]) - min(minn[len][l], minn[len][r - (1 << len) + 1]);
-}
-
-int main()
-{
-    int n = 0, m = 0;
-    scanf("%d%d", &n, &m);
-    for (int i = 1; i <= n; i++)
-    {
-        scanf("%d", &a[i]);
-        lg[i] = lg[i / 2] + 1;
-        maxn[0][i] = a[i];
-        minn[0][i] = a[i];
-    }
-    for (int i = 1; i <= lg[n]; i++)
-    {
-        for (int j = 1; j + (1 << i) - 1 <= n; j++)
-        {
-            maxn[i][j] = max(maxn[i - 1][j], maxn[i - 1][j + (1 << (i - 1))]);
-            minn[i][j] = min(minn[i - 1][j], minn[i - 1][j + (1 << (i - 1))]);
+class SparseTable {
+public:
+    int lg[N] = {-1};
+    ll st[24][N];
+    template <class T>
+    T op(T &a, T &b) { return max(a, b); } //检查区间操作！
+    SparseTable() {
+        for (int i = 1; i < N; i++) {
+            lg[i] = lg[i / 2] + 1;
         }
     }
+    inline void init(int n) {
+        //完成初始化！ for i in [1, n]: st[0][i] = val[i]
+        for (int i = 1, x; i <= n; i++) {
+            cin >> x; st[0][i] = x;
+        }
+        build(n);
+    }
+    inline void build(int n) {
+        for (int i = 1; i <= lg[n]; i++)
+            for (int j = 1; j + (1 << i) - 1 <= n; j++) 
+                st[i][j] = op(st[i - 1][j], st[i - 1][j + (1 << (i - 1))]);
+    }
+    ll query(int l, int r) {
+        ll len = lg[r - l + 1];
+        return op(st[len][l], st[len][r - (1 << len) + 1]);
+    }
+};
+
+SparseTable ST;
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int n, m; cin >> n >> m;
+    ST.init(n);
     while (m--) {
         int l, r; cin >> l >> r;
-        cout << cal(l, r) << "\n";
+        cout << ST.query(l, r) << "\n";
     }
     return 0;
 }
@@ -2709,13 +2724,22 @@ F ( x ) = G ( x ) + H ( x )
 $$
 其中G(x)表示已经走过的路，H(x)表示期望走的路。
 
-IDA*就是将F(x)搬到了IDDFS（迭代加深的DFS）上然后加了个可行性剪枝。
+IDA\*就是将F(x)搬到了IDDFS（迭代加深的DFS）上然后加了个可行性剪枝。
 
 估值函数的确定：
 
 1. 估值函数一般是当状态离目标越近时越优，当然是总体趋势，存在个别的。
 2. 估值函数里的参数一般是比较明显的，且每次操作后一般会改变的，一般也会满足第一点。
 3. 参数一般变化是有范围的。
+
+如果你想要查找地图上任意一个位置到另一个位置的路径，那么请使用广度优先搜索（BFS）或 Dijkstra 算法。如果移动成本相同，则使用广度优先搜索；如果移动成本不同，则使用 Dijkstra 算法。
+
+如果你要查找从一个位置到另一个位置，或者从一个位置到多个目标位置中最近的位置，请使用贪心最佳优先搜索算法或A\*。在大多数情况下建议使用A\*。当你使用贪心最佳优先算法时，请考虑使用带有“不可接受的”启发式算法的A\*。
+
+> 可接受的启发式
+> 在计算机科学中，特别是在与寻路相关的算法中，如果启发式函数从未过高估计达到目标的成本，即它估计从当前位置到达目标位置的成本不高于当前的可能的最低成本，则认为该函数是可接受的。
+
+算法给出的结果是否为最佳路径？对于给定的图，广度优先搜索和 Dijkstra 算法能够保证找到最短路径，但贪心最佳优先算法不保证，**对于 A\* 来说，如果启发式算法给出的成本永远不大于真实的距离，那么它也是可以保证给出最短路径**。随着启发式算法给出的成本越来越小，A\* 退化成 Dijkstra 算法；随着启发式算法给出的成本越来越高，A\* 退化成贪心最佳优先算法。
 
 ~~~c++
 //P1379 八数码难题
