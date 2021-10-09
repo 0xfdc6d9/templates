@@ -94,6 +94,38 @@ namespace KMP {
 using namespace KMP;
 ~~~
 
+### Z Algorithm
+
+约定：字符串下标以0为起点。
+
+对于一个长度为 $n$ 的字符串 $s$。定义函数 $z[i]$ 表示 $s$ 和 $s[i,n-1]$ （即以 $s[i]$ 开头的后缀）的最长公共前缀（LCP）的长度。$z$ 被称为 $s$ 的 $Z$ 函数。特别地，$z[0]=0$。
+
+Z Algorithm 能够在 $O(n)$ 时间复杂度内计算 $Z$ 函数。
+
+~~~c++
+vector<int> z_function(string s) {
+    int n = (int)s.length();
+    vector<int> z(n);
+    //z[0] = n;
+    for (int i = 1, l = 0, r = 0; i < n; ++i) {
+        if (i <= r && z[i - l] < r - i + 1) {
+            z[i] = z[i - l];
+        } else {
+            z[i] = max(0, r - i + 1);
+            while (i + z[i] < n && s[z[i]] == s[i + z[i]])
+                ++z[i];
+        }
+        if (i + z[i] - 1 > r)
+            l = i, r = i + z[i] - 1;
+    }
+    return z;
+}
+~~~
+
+[P5410 【模板】扩展 KMP（Z 函数）](https://www.luogu.com.cn/problem/P5410)
+
+可以访问 [这个网站](https://personal.utdallas.edu/~besp/demo/John2010/z-algorithm.htm) 来看 Z 函数的模拟过程。
+
 ### Trie
 
 开的数组大小为字符集大小乘最大字符串长度。
@@ -394,22 +426,17 @@ void init(int n) {
 constexpr int maxm = 10000010;
 int p[maxm], pn; //prime[]
 bool np[maxm]; //not prime(bool)
-// int f[maxm]; //f[i] is the smallest positive number m such that n/m is a square.
 
 void Euler() {
     np[1] = 1;
-    // f[1] = 1;
     for (int i = 2; i < maxm; ++i) { //循环到maxm是为了把后面的数加入的质数表中，同时筛掉合数
         if (not np[i]) {
-            // f[i] = i;
             p[pn++] = i; //质数表，下标从0开始
         }
         for (int j : p) {
             int k = i * j;
             if (k >= maxm) break; //越界
             np[k] = 1; //标记合数
-            // if (f[i] % j) f[k] = f[i] * j;
-            // else f[k] = f[i] / j;
             if (i % j == 0) break; //当乘数i是被乘数的倍数时，停止筛
         }
     }
@@ -2709,6 +2736,57 @@ int main() {
     st[cnt + 1] = p[1]; //最后一点回到凸包起点
 
     return 0;
+}
+~~~
+
+### 平面最近点对
+
+[参考](https://www.luogu.com.cn/blog/syksykCCC/solution-p1429)
+
+~~~c++
+struct Point {
+    double x, y;
+}p[N];
+int n, tmp[N];
+const double inf = 2e50;
+
+double dis(int i, int j) {
+    return sqrt(1ll * (p[i].x - p[j].x) * (p[i].x - p[j].x) + 1ll * (p[i].y - p[j].y) * (p[i].y - p[j].y));
+}
+
+double merge(int lf, int rt) { //返回由编号lf~rt的点构成的最近点对的距离
+    double d = inf;
+    if (lf == rt) //一个点，无效值
+        return inf;
+    if (lf + 1 == rt) 
+        return dis(lf, rt);
+    ll mid = lf + (rt - lf) / 2;
+    double d1 = merge(lf, mid); //分治
+    double d2 = merge(mid + 1, rt);
+    d = min(d1, d2);
+    int cnt = 0;
+    for (int i = lf; i <= rt; i++) { //找跨越中界线的最近点对
+        if (fabs(p[i].x - p[mid].x) < d) { //如果该点到中界线的距离已经>=d，更不用考虑另一侧的距离
+            tmp[++cnt] = i;
+        }
+    }
+    sort(tmp + 1, tmp + 1 + cnt, [](const int &i, const int &j) { return p[i].y < p[j].y; });
+    for (int i = 1; i <= cnt; i++) {
+        for (int j = i + 1; j <= cnt && p[tmp[j]].y - p[tmp[i]].y < d; j++) { //如果两点的纵坐标之差已经>=d，更不用考虑水平距离了
+            double d3 = dis(tmp[i], tmp[j]);
+            ckmin(d, d3);
+        }
+    }
+    return d;
+}
+
+void solve() {
+    cin >> n; //点数
+    for (int i = 1; i <= n; i++) {
+        cin >> p[i].x >> p[i].y;
+    }
+    sort(p + 1, p + 1 + n, [](const Point &a, const Point &b) { return a.x == b.x ? a.y < b.y : a.x < b.x; });
+    cout << fixed << setprecision(4) << merge(1, n) << "\n";
 }
 ~~~
 
