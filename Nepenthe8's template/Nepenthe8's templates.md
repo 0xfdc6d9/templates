@@ -480,7 +480,6 @@ bool MRtest(ll n) //素数返回1，合数返回0
     ll u = n - 1, t = 0;
     while (u % 2 == 0)
         u /= 2, ++t;
-    ll ud[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022};
     for (int a : test_i32)
     {
         ll v = qpow(a, u, n);
