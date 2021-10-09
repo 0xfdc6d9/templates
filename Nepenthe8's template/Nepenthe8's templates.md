@@ -445,40 +445,60 @@ void Euler() {
 
 #### miller_robin素数测试
 
+时间复杂度为 $O(k \log^3n)$，$k$ 为底数选取的个数，$n$ 为待检验数。
+
+由于这个过程中可能要计算 long long 型变量的平方，所以要考虑数据溢出的问题，解决方案是快速乘。
+
+这里提供一个 $O(1)$ 的快速乘，原理是用溢出来解决溢出。
+
 ~~~c++
+using ull = unsigned long long;
+ll qmul(ll a, ll b, ll mod) //快速乘
+{
+    ll c = (long double)a / mod * b;
+    ll res = (ull)a * b - (ull)c * mod;
+    return (res + mod) % mod;
+}
+ll qpow(ll a, ll n, ll mod) //快速幂
+{
+    ll res = 1;
+    while (n)
+    {
+        if (n & 1)
+            res = qmul(res, a, mod);
+        a = qmul(a, a, mod);
+        n >>= 1;
+    }
+    return res;
+}
 const ll test_i64[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022};
 const int test_i32[] = {2, 7, 61};
-ll qpow(ll x, ll n, ll mod)
+bool MRtest(ll n) //素数返回1，合数返回0
 {
-    ll c = 1;
-    for (x %= mod; n; n /= 2, x = x * x % mod)
-        if (n & 1)
-            c = c * x % mod;
-    return c;
-}
-int miller_robin(ll n) //素数返回1，合数返回0
-{
-    if (n == 2)
-        return 1;
-    if (n % 2 == 0 || n < 2)
-        return 0;
-    ll m = n - 1, q = 0;
-    while (m % 2 == 0)
-        m /= 2, q++;
+    if (n < 3 || n % 2 == 0)
+        return n == 2; //特判
+    ll u = n - 1, t = 0;
+    while (u % 2 == 0)
+        u /= 2, ++t;
+    ll ud[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022};
     for (int a : test_i32)
     {
-        if (a >= n)
-            break;
-        ll x = qpow(a, m, n);
-        for (int i = 0; i < q; i++)
+        ll v = qpow(a, u, n);
+        if (v == 1 || v == n - 1 || v == 0)
+            continue;
+        for (int j = 1; j <= t; j++)
         {
-            ll x1 = x * x % n;
-            if (x1 == 1 && x != 1 && x != n - 1)
-                return 0;
-            x = x1;
+            v = qmul(v, v, n);
+            if (v == n - 1 && j != t)
+            {
+                v = 1;
+                break;
+            } //出现一个n-1，后面都是1，直接跳出
+            if (v == 1)
+                return 0; //这里代表前面没有出现n-1这个解，二次检验失败
         }
-        if (x != 1)
-            return 0;
+        if (v != 1)
+            return 0; //Fermat检验
     }
     return 1;
 }
