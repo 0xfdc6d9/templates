@@ -394,6 +394,124 @@ int main() {
 }
 ~~~
 
+### AC-automaton
+
+[AC 自动机 - OI Wiki (oi-wiki.org)](https://oi-wiki.org/string/ac-automaton/)
+
+时间复杂度 $O(\sum \left | s_i \right | + \left | S \right | )$，其中 $\left | s_i \right |$ 是模板串的长度，$\left | S \right |$ 是文本串的长度。
+
+#### 基本概念
+
+Trie 中的结点表示的是某个模式串的前缀。
+
+AC 自动机的失配指针指向当前状态的最长后缀状态。
+
+例子：ac-automaton1.gif 9号节点
+
+$tr[u,c]$ 也可以理解为从状态（结点） 后加一个字符 `c` 到达的状态（结点），即一个状态转移函数 $trans[u, c]$
+
+#### 关键点
+
+在匹配字符串的过程中，我们会舍弃部分前缀达到最低限度的匹配。
+
+fail 指针呢？它也是在舍弃前缀啊！试想一下，如果文本串能匹配 s，显然它也能匹配 s 的后缀。所谓的 fail 指针其实就是 s 的一个后缀集合。
+
+例子：ac-automaton3.gif 9号节点
+
+`tr` 数组还有另一种比较简单的理解方式：如果在位置 u 失配，我们会跳转到 fail[u] 的位置。所以我们可能沿着 fail 数组跳转多次才能来到下一个能匹配的位置。所以我们可以用 `tr` 数组直接记录记录下一个能匹配的位置，这样就能节省下很多时间。
+
+这样修改字典树的结构，使得匹配转移更加完善。同时它将 fail 指针跳转的路径做了压缩（就像并查集的路径压缩），使得本来需要跳很多次 fail 指针变成跳一次。
+
+~~~c++
+#include <bits/stdc++.h>
+using namespace std;
+const int N = 155;
+const int SZ = 155 * 85;
+
+struct AC_automaton {
+    static const int Num_CharacterSets = 26;
+    int tr[SZ][Num_CharacterSets], tot, e[SZ], fail[SZ], cnt[N], val[SZ];
+    void init() {
+        memset(fail, 0, sizeof(fail));
+        memset(tr, 0, sizeof(tr));
+        memset(val, 0, sizeof(val));
+        memset(cnt, 0, sizeof(cnt));
+        memset(e, 0, sizeof(e));
+        tot = 0;
+    }
+    void insert(string s, int id) { //trie 构建，id为模式串编号
+        int u = 0; 
+        int ns = s.length();
+        s = " " + s;
+        for (int i = 1; i <= ns; i++) {
+            if (!tr[u][s[i] - 'a'])
+                tr[u][s[i] - 'a'] = ++tot;
+            u = tr[u][s[i] - 'a'];
+        }
+        e[u] = id; //标记该节点结尾的模式串编号
+    }
+    void build() {
+        queue<int> q;
+        while (!q.empty())
+            q.pop();
+        for (int i = 0; i < Num_CharacterSets; i++) //将根节点的子节点全部入队
+            if (tr[0][i]) 
+                q.push(tr[0][i]);
+        while (!q.empty()) {
+            int u = q.front(); q.pop();
+            for (int i = 0; i < Num_CharacterSets; i++) {
+                if (tr[u][i]) {
+                    fail[tr[u][i]] = tr[fail[u]][i]; //fail指针指向当前状态的最长后缀状态
+                    q.push(tr[u][i]);
+                }
+                else 
+                    tr[u][i] = tr[fail[u]][i]; //修改字典树结构，将fail指针跳转的路径压缩
+            }
+        }
+    }
+    int query(string t) { //查询多模式串在文本串中最大匹配次数
+        int nt = t.length();
+        t = " " + t;
+        int u = 0, res = 0;
+        for (int i = 1; i <= nt; i++) {
+            u = tr[u][t[i] - 'a'];
+            for (int j = u; j; j = fail[j]) 
+                val[j]++; //每匹配一个节点暴力跳fail到根，路上出现次数++
+        }
+        for (int i = 0; i <= tot; i++) {
+            if (e[i]) { //如果有以i节点结尾的模式串，e[i]为原模式串编号
+                res = max(res, val[i]); //更新最大模式串匹配次数
+                cnt[e[i]] = val[i]; //更新e[i]编号的模式串出现次数
+            }
+        }
+        return res;
+    }
+} AC;
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int n; 
+    while (cin >> n) {
+        if (!n) break;
+        AC.init();
+        string s[N], t; //s为模式串，t为文本串
+        for (int i = 1; i <= n; i++) {
+            cin >> s[i];
+            AC.insert(s[i], i);
+        }
+        cin >> t;
+        AC.build();
+        int ans = AC.query(t);
+        cout << ans << "\n";
+        for (int i = 1; i <= n; i++) {
+            if (AC.cnt[i] == ans) 
+                cout << s[i] << "\n";
+        }
+    }
+    return 0;
+}
+~~~
+
 ## 数学
 
 ### 素数筛
