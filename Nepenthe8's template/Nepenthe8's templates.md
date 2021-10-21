@@ -621,6 +621,38 @@ bool MRtest(ll n) //素数返回1，合数返回0
 }
 ~~~
 
+### 分解质因数
+
+#### 朴素算法
+
+因数是成对分布的， n 的所有因数可以被分成两块，即 $[1, \sqrt{n}]$ ，和 $\sqrt{n} + 1, n]$。只需要把 $[1, \sqrt{n}]$ 里的数遍历一遍，再根据除法就可以找出至少两个因数了。
+
+时间复杂度为 $O(\sqrt n)$。
+
+~~~c++
+struct PrimeFactor {
+    ll num, tot;
+} pfac[N]; //1-index
+ll p_cnt; //记录素因数的种数
+void pff(ll x) { //分解质因数
+    for (ll i = 2; i * i <= x; i++) {
+        while (x % i == 0) {
+            x /= i;
+            if (pfac[p_cnt].num == i) 
+                pfac[p_cnt].tot++;
+            else 
+                pfac[++p_cnt].num = i, pfac[p_cnt].tot = 1;
+        }
+    }
+    if (x > 1) {
+        if (pfac[p_cnt].num == x) 
+            pfac[p_cnt].tot++;
+        else 
+            pfac[++p_cnt].num = x, pfac[p_cnt].tot = 1;
+    }
+}
+~~~
+
 ### 组合数
 
 [例题](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=48654923&headNav=acm)
