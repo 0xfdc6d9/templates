@@ -534,13 +534,18 @@ int main() {
 也可以限制随机数的范围在$[lf, rt]$区间内。
 
 ~~~c++
-#include <random>
-const ll LF = 1;
-const ll RT = 200000;
-std::mt19937 gen(time(0));
-std::uniform_int_distribution<> rnd(LF, RT);
+template <class T>
+T randint(T l, T r = 0) // 生成随机数建议用<random>里的引擎和分布，而不是rand()模数，那样保证是均匀分布
+{
+    static mt19937 eng(time(0));
+    if (l > r)
+        swap(l, r);
+    uniform_int_distribution<T> dis(l, r);
+    return dis(eng);
+}
 
-//var = rnd(gen);
+//var = randint(1, 1000000);
+//var = radint(1000000);
 ~~~
 
 ### function类模板
