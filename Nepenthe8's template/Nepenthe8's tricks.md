@@ -442,7 +442,7 @@ Bellman Ford/SPFA 都是基于动态规划，其原始的状态定义为 $f[i][k
 2. 答案是否是非负的，~~有可能在特判的时候神志不清~~。（比如[Chess Cheater](https://codeforces.com/contest/1427/submission/118950139)，在特判全为L的情况时使答案为-1，那么答案是不可能为负的，及时修改特判）
 3. 初始化（省赛
 4. 数组开小了（省赛
-5. 爆int
+5. 爆int（做前缀和的时候开long long
 6. 是否多组样例
 7. 划分区间时特别注意最后一块（可能没有处理完，如[Silly Mistake](https://codeforces.com/contest/1253/problem/B))
 8. 注意在更新答案的时候是不是在if中才更新，如果在if中是不是能够保证结果能够得到更新。（常见于dp中
