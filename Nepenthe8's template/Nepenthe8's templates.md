@@ -661,9 +661,9 @@ void pff(ll x) { //分解质因数
 ll fac[N], inv[N];
 void exgcd(int a, int b, ll &x, ll &y) //拓展欧几里得
 {
-    if(b == 0) {
+    if (b == 0) {
         x = 1; y = 0;
-        return ;
+        return;
     }
     exgcd(b, a % b, y, x);
     y -= a / b * x;
@@ -672,20 +672,22 @@ void exgcd(int a, int b, ll &x, ll &y) //拓展欧几里得
 void init_C()
 {
     fac[0] = 1;
-    for(int i = 1; i < N; ++i)
+    for (int i = 1; i < N; ++i)
         fac[i] = fac[i - 1] * i % mod; //阶乘数组
     ll x, y;
     exgcd(fac[N - 1], mod, x, y);
     inv[N - 1] = (x % mod + mod) % mod;
-    for(int i = N - 2; i; --i) {
+    for (int i = N - 2; i; --i) {
         inv[i] = inv[i + 1] * (i + 1) % mod; //逆元数组
     }
 }
   
 ll C(ll n, ll m)
 {
-    assert(n >= m);
-    if(n == m || m == 0)
+    // assert(n >= m);
+    if (n >= m)
+        return 0;
+    if (n == m || m == 0)
         return 1;
     return (fac[n] * inv[m] % mod * inv[n - m] % mod) % mod;
 }
