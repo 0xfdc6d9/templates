@@ -3047,8 +3047,8 @@ int main() {
 
 ~~~c++
 inline char nc() {
-    static char buf[1 << 25], *p1 = buf, *p2 = buf;
-    return p1 == p2 && (p2 = (p1 = buf) + fread(buf, 1, 1 << 25, stdin), p1 == p2) ? EOF : *p1++;
+    static char buf[1 << 24], *p1 = buf, *p2 = buf;
+    return p1 == p2 && (p2 = (p1 = buf) + fread(buf, 1, 1 << 24, stdin), p1 == p2) ? EOF : *p1++;
 }
 
 template <class T>
