@@ -697,26 +697,80 @@ ll C(ll n, ll m)
 
 加速线性递推。
 
+例如，已知一个数列 a，它满足：
+$$
+a_{x}=\left\{\begin{array}{ll}
+1 & x \in\{1,2,3\} \\
+a_{x-1}+a_{x-3} & x \geq 4
+\end{array}\right.
+$$
+求 $a$ 数列的第 $n$ 项对 $10^9+7$ 取余的值。
+
+确定目标矩阵为：
+$$
+\begin{bmatrix}
+ f[i] & f[i-1] & f[i-2]
+\end{bmatrix}
+$$
+那么这个矩阵要怎样算出来。根据题目给出的递推式可以得到下面三个式子：
+$$
+\begin{array}{c}
+f[i]=f[i-1] \times 1+f[i-2] \times 0+f[i-3] \times 1 \\
+f[i-1]=f[i-1] \times 1+f[i-2] \times 0+f[i-3] \times 0 \\
+f[i-2]=f[i-1] \times 0+f[i-2] \times 1+f[i-3] \times 0
+\end{array}
+$$
+通过每一项的系数可以得出初始矩阵为：
+$$
+\begin{bmatrix}
+ 1 & 1 & 0 \\
+ 0 & 0 & 1 \\
+ 1 & 0 & 0
+\end{bmatrix}
+$$
+然后我们就可以通过矩阵快速幂进行求解：
+$$
+\begin{bmatrix}
+ f[i-1] & f[i-2] & f[i-3] 
+\end{bmatrix}
+*
+\begin{bmatrix}
+ 1 & 1 & 0 \\
+ 0 & 0 & 1 \\
+ 1 & 0 & 0
+\end{bmatrix}
+=
+\begin{bmatrix}
+ f[i] & f[i-1] & f[i-2]
+\end{bmatrix}
+$$
+第一个 ans 矩阵每左乘第二个 base 矩阵一次，使得矩阵内 第 $i$ 项变为第 $i + 1$ 项。
+
 ~~~c++
+#include <bits/stdc++.h>
+using namespace std;
+using ll = long long;
+const int N = 1e6 + 7;
+const int mod = 1000000007; //998244353
+
+const int order = 3; //矩阵的阶
 struct Matrix {
-    ll mat[110][110];
+    ll mat[order + 1][order + 1];
     Matrix() { memset(mat, 0, sizeof(mat)); }
     Matrix operator*(const Matrix& b) const {
         Matrix res;
-        for (ll i = 1; i <= n; i++) 
-            for (ll j = 1; j <= n; j++)
-                for (ll k = 1; k <= n; k++)
+        for (ll i = 1; i <= order; i++) 
+            for (ll j = 1; j <= order; j++)
+                for (ll k = 1; k <= order; k++)
                     res.mat[i][j] = (res.mat[i][j] + mat[i][k] * b.mat[k][j]) % mod;
         return res;
     }
-}ans, base;
+} ans, base;
 
-void init() {
-    for (ll i = 1; i <= n; i++)
-        for (ll j = 1; j <= n; j++) {
-            ll t; cin >> t;
-            ans.mat[i][j] = base.mat[i][j] = t;
-        }
+void matrixInit() {
+    base.mat[1][1] = base.mat[1][2] = 1;
+    base.mat[2][3] = base.mat[3][1] = 1;
+    ans.mat[1][1] = ans.mat[1][2] = ans.mat[1][3] = 1;
 }
 
 void qpow(ll b) {
@@ -730,17 +784,27 @@ void qpow(ll b) {
 
 int main() {
     ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
-    cin >> n >> k;
-    init();
-    qpow(k - 1);
-    for (ll i = 1; i <= n; i++) {
-        for (ll j = 1; j <= n; j++) {
-            cout << ans.mat[i][j] << " ";
+    int T; cin >> T;
+    while (T--) {
+        memset(ans.mat, 0, sizeof(ans));
+        memset(base.mat, 0, sizeof(base));
+        ll n; cin >> n;
+        if (n <= 3) {
+            cout << 1 << "\n";
+            continue;
         }
-        cout << endl;
+        matrixInit();
+        qpow(n - 3);
+        cout << ans.mat[1][1] << "\n";
     }
     return 0;
 }
+
+/* 
+                            [ 1 1 0 ]
+[ f[i-1] f[i-2] f[i-3] ]  * [ 0 0 1 ] = [ f[i] f[i-1] f[i-2] ]
+                            [ 1 0 0 ]
+ */
 ~~~
 
 ### Berlekamp-Massey Algorithm
