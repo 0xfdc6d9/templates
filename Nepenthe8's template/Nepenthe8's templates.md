@@ -752,7 +752,6 @@ $$
 #include <bits/stdc++.h>
 using namespace std;
 using ll = long long;
-const int N = 1e6 + 7;
 const int mod = 1000000007; //998244353
 
 const int order = 3; //矩阵的阶
@@ -764,7 +763,7 @@ struct Matrix { //1-index
         for (ll i = 1; i <= order; i++) 
             for (ll j = 1; j <= order; j++)
                 for (ll k = 1; k <= order; k++)
-                    res.mat[i][j] = (res.mat[i][j] + mat[i][k] * b.mat[k][j]) % mod;
+                    (res.mat[i][j] += mat[i][k] * b.mat[k][j] % mod) %= mod;
         return res;
     }
 } ans, base;
