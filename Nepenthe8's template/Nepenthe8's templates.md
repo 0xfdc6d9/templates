@@ -756,7 +756,7 @@ const int N = 1e6 + 7;
 const int mod = 1000000007; //998244353
 
 const int order = 3; //矩阵的阶
-struct Matrix {
+struct Matrix { //1-index
     ll mat[order + 1][order + 1];
     Matrix() { memset(mat, 0, sizeof(mat)); }
     Matrix operator*(const Matrix& b) const {
