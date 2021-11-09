@@ -742,9 +742,11 @@ $$
 =
 \begin{bmatrix}
  f[i] & f[i-1] & f[i-2]
-\end{bmatrix}
+\end{bmatrix}
 $$
 第一个 ans 矩阵每左乘第二个 base 矩阵一次，使得矩阵内 第 $i$ 项变为第 $i + 1$ 项。
+
+求数列第 $n$ 项的时间复杂度为 $O(\log n)$。
 
 ~~~c++
 #include <bits/stdc++.h>
