@@ -1720,9 +1720,9 @@ int main() {
 ~~~c++
 class Dsu {
 public:
-    static const int MAXN = 5e4 + 7;
+    static const int MAXN = 2e5 + 7;
     int fa[MAXN], rk[MAXN];
-    Dsu(int n) {
+    void init(int n) {
         for (int i = 1; i <= n; i++)
             fa[i] = i, rk[i] = 1;
     }
@@ -1737,7 +1737,7 @@ public:
             rk[x]++;
     }
     bool isSame(int x, int y) { return find(x) == find(y); }
-};
+} dsu;
 ~~~
 
 ### 最短路
