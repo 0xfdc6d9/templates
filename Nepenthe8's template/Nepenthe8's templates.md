@@ -1723,16 +1723,21 @@ public:
     static const int MAXN = 2e5 + 7;
     int fa[MAXN], rk[MAXN];
     void init(int n) {
-        for (int i = 1; i <= n; i++)
+        for (int i = 1; i <= n; i++) {
             fa[i] = i, rk[i] = 1;
+        }
     }
     int find(int x) { return fa[x] == x ? x : fa[x] = find(fa[x]); }
     void merge(int x, int y) {
         x = find(x), y = find(y);
-        if (rk[x] >= rk[y])
+        if (x == y) {
+            return;
+        }
+        if (rk[x] >= rk[y]) {
             fa[y] = x;
-        else
+        } else {
             fa[x] = y;
+        }
         if (rk[x] == rk[y] && x != y)
             rk[x]++;
     }
