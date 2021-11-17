@@ -346,6 +346,13 @@ bool curF(double x) { //出现分数？
 
 例题：[D - Integers Have Friends](https://codeforces.com/contest/1549/problem/D)。
 
+### 二项式定理
+
+根据此定理，可以将 $x+y$ 的任意次幂展开成和的形式。
+$$
+(a+b)^{n}=\sum_{r=0}^{n} C_{n}^{r} a^{n-r} b^{r}=C_{n}^{0} a^{n}+C_{n}^{1} a^{n-1} b+\cdots+C_{n}^{r} a^{n-r} b^{r}+\cdots+C_{n}^{n} b^{n}
+$$
+
 ## 计算几何
 
 ### 利用球面一般方程的系数计算球心坐标和半径

@@ -897,6 +897,142 @@ int main() {
 }
 ~~~
 
+### 高斯消元
+
+#### 列主元求解方程组
+
+~~~c++
+const int MAXN = 220;
+double a[MAXN][MAXN], x[MAXN]; //方程的左边的矩阵和等式右边的值, 求解之后x存的就是结果, 0-index
+int equ, var;                  //方程数和未知数个数
+/*
+* 返回0 表示无解,1 表示有解
+*/
+int Gauss() {
+    int i, j, k, col, max_r;
+    for (k = 0, col = 0; k < equ && col < var; k++, col++) {
+        max_r = k;
+        for (i = k + 1; i < equ; i++)
+            if (fabs(a[i][col]) > fabs(a[max_r][col]))
+                max_r = i;
+        if (fabs(a[max_r][col]) < eps)
+            return 0;
+        if (k != max_r) {
+            for (j = col; j < var; j++)
+                swap(a[k][j], a[max_r][j]);
+            swap(x[k], x[max_r]);
+        }
+        x[k] /= a[k][col];
+        for (j = col + 1; j < var; j++)
+            a[k][j] /= a[k][col];
+        a[k][col] = 1;
+        for (i = 0; i < equ; i++) {
+            if (i != k) {
+                x[i] -= x[k] * a[i][col];
+                for (j = col + 1; j < var; j++)
+                    a[i][j] -= a[k][j] * a[i][col];
+                a[i][col] = 0;
+            }
+        }
+    }
+    return 1;
+}
+
+//                 系数       函数次数  自变量
+double calf(vector<double> &p, int n, double x) { //p数组 0-index 依次表示(n - i - 1)次项的系数
+    double ret = 0, pow_now = 1;
+    for (int i = n; i >= 0; --i) {
+        ret += pow_now * p[i];
+        pow_now *= x;
+    }
+    return ret;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    vector<int> f = {1, 5, 15, 35, 70, 126, 210, 330, 495, 715, };
+    int n = 7;
+    equ = var = n;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            a[i][j] = powmod(i + 1, n - j - 1);
+        }
+        x[i] = f[i];
+    }
+    Gauss();
+    return 0;
+}
+~~~
+
+#### 求解线性递推（模意义下
+
+[Problem G. Pyramid](https://codeforces.com/gym/101981)
+
+~~~c++
+const int MAXN = 220;
+ll a[MAXN][MAXN], x[MAXN]; //方程的左边的矩阵和等式右边的值, 求解之后x存的就是结果, 0-index
+int equ, var;                  //方程数和未知数个数
+/*
+* 返回0 表示无解,1 表示有解
+*/
+int Gauss() {
+    int i, j, k, col, max_r;
+    for (k = 0, col = 0; k < equ && col < var; k++, col++) {
+        max_r = k;
+        for (i = k + 1; i < equ; i++)
+            if (fabs(a[i][col]) > fabs(a[max_r][col]))
+                max_r = i;
+        if (fabs(a[max_r][col]) < eps)
+            return 0;
+        if (k != max_r) {
+            for (j = col; j < var; j++)
+                swap(a[k][j], a[max_r][j]);
+            swap(x[k], x[max_r]);
+        }
+        (x[k] *= powmod(a[k][col], mod - 2)) %= mod;
+        for (j = col + 1; j < var; j++)
+            (a[k][j] *= powmod(a[k][col], mod - 2)) %= mod;
+        a[k][col] = 1;
+        for (i = 0; i < equ; i++) {
+            if (i != k) {
+                x[i] = (x[i] - (x[k] * a[i][col] % mod) + mod) % mod;
+                for (j = col + 1; j < var; j++)
+                    a[i][j] = (a[i][j] - (a[k][j] * a[i][col] % mod) + mod) % mod;
+                a[i][col] = 0;
+            }
+        }
+    }
+    return 1;
+}
+
+//                 系数       函数次数  自变量
+ll calf(vector<ll> &p, int n, ll x) { //p数组 0-index 依次表示(n - i - 1)次项的系数
+    ll ret = 0, pow_now = 1;
+    for (int i = n; i >= 0; --i) {
+        (ret += pow_now * p[i] % mod) %= mod;
+        (pow_now *= x) %= mod;
+    }
+    return ret;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    vector<int> f = {1, 5, 15, 35, 70, 126, 210, 330, 495, 715, };
+    int n = 7;
+    equ = var = n;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            a[i][j] = powmod(i + 1, n - j - 1);
+        }
+        x[i] = f[i];
+    }
+    Gauss();
+    return 0;
+}
+~~~
+
+
+
 ### FFT
 
 ~~~c++
