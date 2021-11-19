@@ -3475,7 +3475,9 @@ void SA() {
 }
 ~~~
 
-### 三分套三分
+### 三分法
+
+#### 三分套三分
 
 比如求[最小球覆盖](https://vjudge.net/problem/Gym-101981D)。显然题目所求的这个半径是一个关于 $x, y, z$ 的函数，即$f(x, y, z) = r$，我们考虑三分套三分求解这个函数的最小值。对于这个函数，无论固定  $x$，固定 $y$，还是固定 $z$，都易证它是一个单峰函数。所以可以先三分一个变量，再固定这个变量，三分另一个变量，来求出最后的答案。
 
@@ -3534,6 +3536,51 @@ cnt==3: z    0   1 0   1         0   1 0   1
 ~~~
 
 这样可以枚举出所有的排列。
+
+#### 整数三分
+
+注意控制左右边界跳出循环的条件，可以是设定一个较为宽松的左右边界，然后暴力枚举左右边界内的数值。
+
+还是一个三分套三分的例子
+
+[Submission #136129374 - Codeforces](https://codeforces.com/contest/1486/submission/136129374)
+
+~~~c++
+ll sol(vector<pair<ll, ll>> &p, vector<ll> cp, int step) {
+    if (step == 2) {
+        ll sum = 0;
+        for (int i = 0; i < (int)p.size(); i++) {
+            sum += dis(cp, p[i]);
+        }
+        if (sum < mind) {
+            mind = sum;
+            center = cp;
+        }
+        return sum;
+    }
+    ll l = 0, r = 1000000000, tans = LLONG_MAX;
+    while (r - l >= 10) {
+        ll m1 = (2ll * l + r) / 3, m2 = (l + 2ll * r) / 3;
+        cp[step] = m1;
+        ll f1 = sol(p, cp, step + 1);
+        cp[step] = m2;
+        ll f2 = sol(p, cp, step + 1);
+        if (f1 <= f2) {
+            r = m2 - 1;
+        } else {
+            l = m1 + 1;
+        }
+    }
+    for (ll tm = l; tm <= r; tm++) {
+        cp[step] = tm;
+        ll tf = sol(p, cp, step + 1);
+        if (tf < tans) {
+            tans = tf;
+        }
+    }
+    return tans;
+}
+~~~
 
 ### Modint
 
