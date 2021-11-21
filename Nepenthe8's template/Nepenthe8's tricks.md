@@ -198,6 +198,25 @@ str.erase(str.begin() + 3, str.begin() + 8);//删除位置[3, 8)的元素，输�
 `foo.to_ullong()` 返回它转换为unsigned long long的结果，如果超出范围则报错
 `foo.to_string()` 返回它转换为string的结果
 
+#### 二维 vector 初始化
+
+~~~c++
+// 全部初始化为1
+// 方法1
+vector<vector<int>> vec(row, vector<int> (col,1));
+
+//方法2
+vector<vector<int>> vec;
+vec.resize(row);
+for(int i = 0; i < vec.size(); i++)
+    vec[i].resize(col);
+for(int i = 0; i < row; i++)
+    for (int j = 0; j < col; j++)
+        vec[i][j] = 1;
+~~~
+
+
+
 ### 函数
 
 #### lower_bound()
