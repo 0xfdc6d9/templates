@@ -2075,6 +2075,12 @@ namespace Dijkstra {
         g[d_cnt].next = head[u];
         head[u] = d_cnt++;
     }
+    void init(int n) {
+//        memset(head, -1, sizeof(head));
+        for (int i = 0; i <= n; i++) {
+            head[i] = -1;
+        }
+    }
 }
 using namespace Dijkstra;
 ~~~
