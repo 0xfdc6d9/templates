@@ -3567,6 +3567,7 @@ ll sol(vector<pair<ll, ll>> &p, vector<ll> cp, int step) {
     ll l = 0, r = 1000000000, tans = LLONG_MAX;
     while (r - l >= 10) {
         ll m1 = (2ll * l + r) / 3, m2 = (l + 2ll * r) / 3;
+        //ll m1 = l + (r - l + 1) / 3, m2 = r - (r - l + 1) / 3;
         cp[step] = m1;
         ll f1 = sol(p, cp, step + 1);
         cp[step] = m2;
