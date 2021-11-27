@@ -1881,6 +1881,91 @@ public:
 } dsu;
 ~~~
 
+#### 拓展域并查集
+
+~~~c++
+#include "bits/stdc++.h"
+using namespace std;
+using ll = long long;
+
+/*
+四类动物的食物链，A 吃 B，B 吃 C, C 吃 D，D 吃 A
+第一种说法是 1 X Y，表示 X 和 Y 是同类。
+第二种说法是 2 X Y，表示 X 吃 Y。
+第三种说法是 3 X Y，表示 X 和 Y 不是同类，且 X 不吃 Y，Y 也不吃 X。
+ */
+
+class Dsu {
+public:
+    static const int MAXN = 3e5 + 7;
+    int fa[MAXN], rk[MAXN];
+    void init(int n) {
+        for (int i = 1; i <= n; i++) {
+            fa[i] = i, rk[i] = 1;
+        }
+    }
+    int find(int x) { return fa[x] == x ? x : fa[x] = find(fa[x]); }
+    void merge(int x, int y) {
+        x = find(x), y = find(y);
+        if (x == y) {
+            return;
+        }
+        if (rk[x] >= rk[y]) {
+            fa[y] = x;
+        } else {
+            fa[x] = y;
+        }
+        if (rk[x] == rk[y] && x != y)
+            rk[x]++;
+    }
+    bool isSame(int x, int y) { return find(x) == find(y); }
+} dsu;
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(nullptr);
+    int n, k; cin >> n >> k;
+    dsu.init(4 * n);
+    int ans = 0;
+    while (k--) {
+        int opt, x, y; cin >> opt >> x >> y;
+        if (x > n || y > n) {
+            ++ans;
+            continue;
+        }
+        if (opt == 1) {
+            if (dsu.isSame(x, y + n) || dsu.isSame(x, y + 3 * n) || dsu.isSame(x, y + 2 * n)) { //如果有非同类关系，则表明不是同类
+                ++ans;
+            } else { //合并同类
+                dsu.merge(x, y);
+                dsu.merge(x + n, y + n);
+                dsu.merge(x + 2 * n, y + 2 * n);
+                dsu.merge(x + 3 * n, y + 3 * n);
+            }
+        } else if (opt == 2) {
+            if (dsu.isSame(x, y) || dsu.isSame(x, y + 3 * n) || dsu.isSame(x, y + 2 * n)) { //如果有非捕食关系，则表明是假话
+                ++ans;
+            } else { //构建捕食关系
+                dsu.merge(x, y + n);
+                dsu.merge(x + n, y + 2 * n);
+                dsu.merge(x + 2 * n, y + 3 * n);
+                dsu.merge(x + 3 * n, y);
+            }
+        } else {
+            if (dsu.isSame(x, y) || dsu.isSame(x, y + n) || dsu.isSame(x, y + 3 * n)) { //如果有同类、捕食、被捕食关系，则说明是假话
+                ++ans;
+            } else { //构建 非同类 且 非捕食 且 非被捕食 关系
+                dsu.merge(x, y + 2 * n);
+                dsu.merge(x + n, y + 3 * n);
+                dsu.merge(x + 2 * n, y);
+                dsu.merge(x + 3 * n, y + n);
+            }
+        }
+    }
+    cout << ans << "\n";
+    return 0;
+}
+~~~
+
 ### 最短路
 
 #### Dijkstra
