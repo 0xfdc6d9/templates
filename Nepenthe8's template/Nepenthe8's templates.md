@@ -3591,6 +3591,23 @@ int main()
 使用时重写f函数和随机生成的点Node即可，注意多次调用SA来减小误差。如果求全局最小值则$de < 0$时接受当前解，如果求全局最大值则$de>0$时接受当前解。
 
 ~~~c++
+double ans = 1e18;
+const double delta = 0.993;
+int n;
+struct Node {
+    double x, y, z;
+} pnow, pans, p[N];
+ 
+inline double sqr(double x) { return x * x; }
+ 
+double f(Node now) {
+    double res = 0;
+    for (int i = 0; i < n; i++) {
+        ckmax(res, sqrt(sqr(now.x - p[i].x) + sqr(now.y - p[i].y) + sqr(now.z - p[i].z)));
+    }
+    return res;
+}
+ 
 void SA() {
     pnow = pans; //初始化
     double T = 2021; //初始温度
@@ -3607,6 +3624,20 @@ void SA() {
         }
         T *= delta; //降温
     }
+}
+ 
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    cin >> n;
+    for (int i = 0; i < n; i++)
+        cin >> p[i].x >> p[i].y >> p[i].z;
+    SA(); //多次运行减小误差
+    SA();
+    SA();
+    SA();
+    SA();
+    cout << fixed << setprecision(15) << ans << "\n";
+    return 0;
 }
 ~~~
 
