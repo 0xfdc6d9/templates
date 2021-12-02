@@ -2041,6 +2041,23 @@ namespace Dijkstra {
 using namespace Dijkstra;
 ~~~
 
+###### 有向图删边
+
+~~~c++
+for (ll i = 0, u, v, w; i < road.size(); i++) {
+    u = road[i].first, v = road[i].second, w = g[u][v];
+    g[u][v] = g[v][u] = INF; //删
+    dijkstra(n, x);
+    ll dis1 = dis[s] + dis[t];
+    dijkstra(n, s);
+    ll dis2 = dis[t];
+    if (dis1 == dis2) {
+        ckmin(ans, id[u][v]);
+    }
+    g[u][v] = g[v][u] = w; //返回原状态
+}
+~~~
+
 #### 堆优化 Dijkstra
 
 时间复杂度：$O((n + m) \log m)$
@@ -2404,6 +2421,24 @@ int main() {
 ~~~
 
 ### 最小环
+
+#### 问题
+
+给出一个图，问其中的有 $n$ 个节点构成的边权和最小的环 $n \ge 3$ 是多大。图的最小环也称**围长**。
+
+#### 暴力解法
+
+设 $u, v$ 之间有一条长为 $w$ 的边，$dis(u, v)$ 表示删除 $u$ 和 $v$ 之间的连边之后，$u$ 和 $v$ 的最短路。那么最小环是 $dis(u, v) + w$。时间复杂度为 $\mathcal O(n^2m)$
+
+#### Dijkstra
+
+如果枚举所有边，每一次求删除一条边之后对这条边的起点跑一次 Dijkstra，时间复杂度为：$\mathcal O(m(n + m) \log m)$
+
+如果是像[CCPC2021桂林 E - Buy and Delete](https://codeforces.com/gym/103409/problem/E)一样，最小环可以是 $n$ 个节点构成的边权和最小的环 $n \ge 2$，那么我们可以直接对每个点进行一次 Dijkstra，然后 $\mathcal O(n^2)$ 枚举可能的环起点和中断点（就是把环分成两部分），更新围长。
+
+#### Floyd
+
+时间复杂度：$\mathcal O(n^3)$。
 
 [HDU-1599](https://vjudge.gxu.mmmm.mn/problem/HDU-1599)
 
