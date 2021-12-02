@@ -1991,7 +1991,7 @@ namespace Dijkstra {
     const int MAXN = 1010;
     bool vis[MAXN];
     int pre[MAXN]; //pre[v] = u 表示v的前驱节点为u
-    deque<pair<int, int> > road; //最短路径
+    deque<pair<int, int>> road; //最短路径
     int g[MAXN][MAXN];
     ll dis[MAXN];
     void dij_init(int n) { /* 注意邻接矩阵的初始化 */
