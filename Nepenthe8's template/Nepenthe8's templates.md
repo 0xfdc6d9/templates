@@ -1980,7 +1980,7 @@ Dijkstra 是基于一种贪心的策略，首先用数组 dis 记录起点到每
 
 不断重复上述动作，将所有的点都更新到最短路径。
 
-这种算法实际上是 $O(n^2)$ 的时间复杂度，但我们发现在 dis 数组中选择最小值时，我们可以用 STL 里的堆来进行优化，堆的一个性质就是可以在 nlogn的时限内满足堆顶是堆内元素的最大（小）值。
+这种算法实际上是 $O(n^2)$ 的时间复杂度，但我们发现在 dis 数组中选择最小值时，我们可以用 STL 里的堆来进行优化，堆的一个性质就是可以在 nlogn 的时限内满足堆顶是堆内元素的最大（小）值。
 
 ##### 邻接矩阵形式
 
@@ -2343,6 +2343,64 @@ namespace Prim{
     }
 }
 using namespace Prim;
+~~~
+
+### 最长路
+
+[P1807 最长路 - 洛谷](https://www.luogu.com.cn/problem/P1807)
+
+一个负数越小，那它的绝对值肯定更大。这样我们就可以把最长路问题转换为最短路问题。
+
+如果使用 SPFA ，我们在存边时将边权取相反数，求最短路，答案取相反数即为所求的最长路。
+
+如果使用拓扑排序，则先需要保证图为 DAG ，在拓扑的过程中更新每个点的最长路。
+
+~~~c++
+int ind[N];
+bool isReachable[N]; //标记是否可以从1走到这个点
+int dis[N];
+
+//         起点    终点    点数
+void Topo(int st, int en, int n) {
+    isReachable[st] = true;
+    dis[en] = -1; //-1表示不可达
+
+    queue<int> q;
+    for (int i = 1; i <= n; i++)
+        if (ind[i] == 0)
+            q.push(i);
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        for (int i = head[u]; ~i; i = g[i].next) {
+            int v = g[i].v, w = g[i].w;
+            ind[v]--;
+            if (isReachable[u]) { //如果能从1走到u，则可以通过当前这条边走到v
+                ckmax(dis[v], dis[u] + w);
+                isReachable[v] = true;
+            }
+            if (ind[v] == 0) {
+                q.push(v);
+            }
+        }
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int n, m; cin >> n >> m;
+    for (int i = 0; i <= n; i++) {
+        head[i] = -1;
+    }
+    for (int i = 0, u, v, w; i < m; i++) {
+        cin >> u >> v >> w;
+        addedge(u, v, w);
+        ind[v]++;
+    }
+    Topo(1, n, n);
+    cout << dis[n] << "\n";
+    return 0;
+}
 ~~~
 
 ### 最小环
