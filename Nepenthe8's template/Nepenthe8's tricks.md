@@ -452,6 +452,51 @@ Bellman Ford/SPFA 都是基于动态规划，其原始的状态定义为 $f[i][k
 
 [787. K 站中转内最便宜的航班 - 力扣（LeetCode）](https://leetcode-cn.com/problems/cheapest-flights-within-k-stops/)
 
+### 找环/判环
+
+[Forest Program](https://codeforces.com/gym/102361/problem/F)
+
+~~~c++
+/* 给定一张无向简单图，同时规定一条边只属于一个环。可以删除任意条边使得这张图变成森林，也就是使得每一个连通块都是树。求一共有多少种方案。 */
+
+vector<int> g[N];
+int dfn[N];
+ll num = 0, ans = 1;
+bool vis[N];
+
+void dfs(int idx, int u, int fa) {
+    dfn[u] = idx;
+    for (auto v : g[u]) {
+        if (v == fa)
+            continue;
+        if (!dfn[v])
+            dfs(idx + 1, v, u);
+        else if (dfn[v] < dfn[u]) {
+            ll tmp = dfn[u] - dfn[v] + 1; //tmp为当前环上边的数量
+            num += tmp;
+            ans = (ans * (powmod(2, tmp) - 1) + mod) % mod;
+        }
+    }
+    vis[u] = true;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int n, m; cin >> n >> m;
+    for (int i = 0, u, v; i < m; i++) {
+        cin >> u >> v;
+        g[u].emplace_back(v);
+        g[v].emplace_back(u);
+    }
+    for (int i = 1; i <= n; i++) { //可能不连通
+        if (!vis[i])
+            dfs(1, i, -1);
+    }
+    cout << ans * powmod(2, m - num) % mod << "\n";
+    return 0;
+}
+~~~
+
 ## 搜索
 
 ### 注意
