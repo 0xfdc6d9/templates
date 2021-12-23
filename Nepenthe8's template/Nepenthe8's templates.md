@@ -38,7 +38,7 @@ ull rhashs(int l, int r) { /* 翻转子串的哈希值 */
 
 void hashs_init() { //为了防止查询时出现数组越界的情况，将整体的哈希值都向右移了一位
     p[0] = 1;
-    h1[0] = (ull)s[0];
+    h1[1] = (ull)s[0];
     for (int i = 1; i < s.length(); i++) {
         h1[i + 1] = ((h1[i] * base) % mod + (ull)s[i]) % mod;
         p[i] = (p[i - 1] * base) % mod; //预处理base的i次方
