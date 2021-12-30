@@ -278,6 +278,28 @@ auto getRid = [&](int x) {
 
 不加 1，表示取离散化后下标为 id 的元素；加 1，表示取离散化后第 id 个元素。
 
+##### 注意
+
+~~~c++
+multiset<int> ms;
+...
+auto p = ms.lower_bound(last + 1);
+if (p == ms.end() || *p != last + 1) {
+    ok = false;
+    break;
+}
+~~~
+
+在 set/multiset 中使用二分时也应注意判断是否不存在满足条件的值，即与 end() 进行比较。
+
+比如
+
+~~~c++
+multiset<int> ms = {0, 0}
+auto p = ms.lower_bound(2);
+//p == ms.end()
+~~~
+
 #### __builtin_popcount()
 
 __builtin_popcount()用于计算一个 32 位无符号整数有多少个位为1
