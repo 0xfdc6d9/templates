@@ -1,55 +1,45 @@
 # Nepenthe8's template
 
-[TOC]
-
 ## 字符串处理
 
 ### 字符串哈希
 
+#### 自然溢出 + 查询字串哈希值
+
+注意查询子串哈希值包含乘法，若选取其他模数需注意不要爆unsigned long long。
+
 ~~~c++
 typedef unsigned long long ull;
-ull base = 131;
-ull mod = 212370440130137957ll;
-constexpr int maxn = 10010;
+static const int MAXN = 3e4 + 7;
+ull base = 13131;
+ull h1[MAXN], pb[MAXN]/* base的i次方 */;
+ull hashs(int l, int r) { //假设要查询[i, j]的哈希值，调用hashs(i + 1, j + 1)，rhashs(i + 1, j + 1)
+    return h1[r] - h1[l - 1] * pb[r - l + 1];
+}
+void hashs_init(string s) { //为了防止查询时出现数组越界的情况，将整体的哈希值都向右移了一位
+    pb[0] = 1;
+    h1[1] = (ull)s[0];
+    for (int i = 1; i < s.length(); i++) {
+        h1[i + 1] = h1[i] * base + (ull)s[i];
+        pb[i] = pb[i - 1] * base; //预处理base的i次方
+    }
+}
+~~~
 
-ull hashs(string s) { //var = hashs(string)
+$10^{18}$ 模数单哈希
+
+~~~c++
+using ull = unsigned long long;
+ull base = 131;
+ull mod = 212370440130137957ll; //是质数！！
+ull hashs(string s)
+{
     ull ans = 0;
-    for (int i = 0; i < s.length(); i++)
+    for (int i = 0; i < (int)s.length(); i++)
         ans = (ans * base + (ull)s[i]) % mod;
     return ans;
 }
 ~~~
-
-### 查询子串哈希值
-
-~~~c++
-typedef unsigned long long ull;
-ull base = 131;
-
-ull h1[N], h2[N], p[N]/* base的i次方 */;
-
-ull hashs(int l, int r) { //假设要查询[i, j]的哈希值，调用hashs(i + 1, j + 1)，rhashs(i + 1, j + 1)
-    return (h1[r] - h1[l - 1] * p[r - l + 1] % mod + mod) % mod;
-}
-
-ull rhashs(int l, int r) { /* 翻转子串的哈希值 */
-    return (h2[l] - h2[r + 1] * p[r - l + 1] % mod + mod) % mod;
-}
-
-void hashs_init() { //为了防止查询时出现数组越界的情况，将整体的哈希值都向右移了一位
-    p[0] = 1;
-    h1[1] = (ull)s[0];
-    for (int i = 1; i < s.length(); i++) {
-        h1[i + 1] = ((h1[i] * base) % mod + (ull)s[i]) % mod;
-        p[i] = (p[i - 1] * base) % mod; //预处理base的i次方
-    }
-    for (int i = s.length() - 1; i >= 0; i--) {
-        h2[i + 1] = ((h2[i + 2] * base) % mod + (ull)s[i]) % mod;
-    }
-}
-~~~
-
-值得提一嘴的是，在查询子串哈希值时，不能使用自然溢出时采用的模数，因为要想取出区间 $[lf, rt]$ 的值，那么我们需要在h[rt]这一位上，将 $h[lf - 1]$ 累加的哈希值通过左移操作消除掉。而自然溢出无法保证得到的结果能够消除 $h[lf - 1]$ 之前的影响。
 
 ### KMP
 

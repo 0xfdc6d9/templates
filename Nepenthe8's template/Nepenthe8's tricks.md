@@ -354,6 +354,23 @@ for (auto i : a) {
 //2 3 4 5 6 
 ~~~
 
+#### prev()、next()、advance()
+
+例如在多重集合 $S$ 中求：
+
+- Find the minimum element in $S$ that is greater than $x$
+- Find the maximum element in $S$ that is less than $x$
+
+~~~c++
+multiset<int> ms = {-1, 0, 1, 3, 3, 3, 7};
+auto p = ms.lower_bound(3);
+debug(*p); //## *p = 3
+debug(*prev(p)); //## *prev(p) = 1
+debug(*prev(p, 2)); //## *prev(p, 2) = 0
+advance(p, 3); //第二个参数可正可负
+debug(*p); //## *p = 7
+~~~
+
 ## 数学
 
 ### 注意
