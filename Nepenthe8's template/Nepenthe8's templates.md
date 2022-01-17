@@ -798,6 +798,61 @@ int main() {
  */
 ~~~
 
+[另一个](https://leetcode-cn.com/problems/count-vowels-permutation/)封装比较好的板子：
+
+~~~c++
+using Mat = vector<vector<ll>>;
+class MatrixFastPow {
+public:     
+    Mat multiply(const Mat &matrixA, const Mat &matrixB, ll mod) {
+        int n = matrixA.size();
+        int m = matrixB[0].size();
+        Mat res(n, vector<ll>(m, 0));
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < m; ++j)
+                for (int k = 0; k < (int)matrixA[i].size(); ++k)
+                    res[i][j] = (res[i][j] + matrixA[i][k] * matrixB[k][j]) % mod;
+        return res;
+    }
+     
+    Mat fastPow(const Mat &matrix, ll power, ll mod) {
+        int n = matrix.size();
+        Mat res(n, vector<ll>(n, 0));
+        Mat curr = matrix;
+
+        // res initialization
+        for (int i = 0; i < n; ++i) {
+            res[i][i] = 1;
+        }
+
+        for (int i = power; i != 0; i >>= 1) {
+            if (i & 1)
+                res = multiply(curr, res, mod);
+            curr = multiply(curr, curr, mod);
+        }
+        return res;
+    }
+
+    int getAns(int n) {
+        ll mod = 1e9 + 7;
+        Mat factor =
+        {
+            {0, 1, 0, 0, 0}, 
+            {1, 0, 1, 0, 0}, 
+            {1, 1, 0, 1, 1}, 
+            {0, 0, 1, 0, 1}, 
+            {1, 0, 0, 0, 0},
+        };
+        Mat res = fastPow(factor, n - 1, mod);
+        long long ans = 0;
+        for (int i = 0; i < 5; ++i) {
+            ans = (ans + accumulate(res[i].begin(), res[i].end(), 0LL)) % mod;
+        }
+        return ans;
+    }
+};
+~~~
+
 ### Berlekamp-Massey Algorithm
 
 用于线性递推，时间复杂度为$O(n^2 \log m)$，其中 $n$ 为数列 $P$ 的前 $n$ 项，$m$ 为要求的 $P_m$。
