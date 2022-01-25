@@ -597,7 +597,27 @@ int main() {
 
 ### 记忆化搜索
 
-[天元突破 红莲螺岩](https://ac.nowcoder.com/acm/contest/16976/F)，$dp[pos][lf][rt]$表示在 $pos$ 位置，左边剩 $lf$ 个，右边剩 $rt$ 个时的最小花费。[code](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=47958190)
+[天元突破 红莲螺岩](https://ac.nowcoder.com/acm/contest/16976/F)，$dp[pos][lf][rt]$ 表示在 $pos$ 位置，左边剩 $lf$ 个，右边剩 $rt$ 个时的最小花费。[code](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=47958190)
+
+## dp
+
+### 状态转移
+
+状态转移时，依赖关系不好找，而被依赖的关系容易找到，所以对于每个状态，更新被这个状态依赖的关系。
+
+也就是说，对于逆拓扑计算很难划分，可以采用正拓扑的计算方法，从第 $i-1$ 个物品的角度看会递推到那两个集合中
+
+[例](https://ac.nowcoder.com/acm/contest/23106#submit/%22onlyMyStatusFilter%22%3Atrue%2C%22problemIdFilter%22%3A231939)
+
+~~~c++
+for (int i = 1; i <= n; i++) {
+    dp[i][f(a[i])] = 1;
+    for (int j = 1; j <= 9; j++) {
+        dp[i][f(a[i] + j)] += dp[i - 1][j];
+        dp[i][j] += dp[i - 1][j];
+    }
+}
+~~~
 
 ## 杂项
 
