@@ -2606,6 +2606,68 @@ int main() {
 }
 ~~~
 
+### 缩点
+
+设有 $n$ 个点 $m$ 条边，tarjan 缩点的时间复杂度为 $\mathcal O(n + m)$。
+
+有向图的 tarjan 和无向图的 tarjan 不一样（在[样例](https://www.luogu.com.cn/problem/P3387)中用无向图的 dfs 会造成越界）。
+
+~~~c++
+int dfn[N], low[N], times/* 时间戳 */;
+int co[N]/* 缩点后每个点对应的标号，1-index */, col/* 缩点后还有几个点 */;
+int st[N], top;
+bool inStack[N];
+vector<int> g[N], ng[N];
+
+void tarjan(int x) {
+    dfn[x] = low[x] = ++times;
+    st[++top] = x;
+    inStack[x] = 1;
+    for (int i = 0; i < (int)g[x].size(); i++) {
+        int v = g[x][i];
+        if (!dfn[v]) { // 没访问过
+            tarjan(v);
+            ckmin(low[x], low[v]);
+        } else if (inStack[v]) { // 在栈中，说明找到环了
+            ckmin(low[x], dfn[v]);
+        }
+    }
+    if (low[x] == dfn[x]) { // 防止一个环遍历到一半就出栈了
+        col++;
+        while (true) { // 弹出该连通分量的所有结点
+            co[st[top]] = col;
+            inStack[st[top]] = 0;
+            if (st[top--] == x) 
+                break;
+        }
+    }
+}
+
+
+int main() {
+    // ...
+    for (int i = 0; i < m; i++) { // 有向边
+        int u, v; cin >> u >> v;
+        g[u].emplace_back(v);
+    }
+    for (int i = 1; i <= n; i++) { // 图可能不连通
+        if (!dfn[i]) {
+            tarjan(i);
+        }
+    }
+    vector<int> ind(col + 1);
+    for (int u = 1; u <= n; u++) { // 缩点后遍历原图重新建图为ng
+        for (auto v : g[u]) {
+            if (co[u] != co[v]) { // 省去同一个强连通分量内点的连边
+                ng[co[u]].emplace_back(co[v]);
+                ind[co[v]]++;
+            }
+        }
+    }       
+    // ...
+}
+~~~
+
 ### 最大流
 
 Dinic算法时间复杂度为$O(V^2E)$，在二分图中为$O(V \sqrt{E})$。
