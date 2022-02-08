@@ -1480,13 +1480,13 @@ struct BIT {
 
 #### 普通平衡树
 
-【treap】 是一种弱平衡的二叉搜索树。treap 这个单词是 tree 和 heap 的组合，表明 treap 是一种由树和堆组合形成的数据结构。treap 的每个结点上除了关键字 key 之外，还要额外储存一个值 rk (priority)。treap 除了要满足关于**key的BST性质（左子<根<右子，即拍扁序是有序的）之外，还需满足关于rk的小根堆性质**。而 rk 是每个结点建立时随机生成的，因此 treap 是**期望平衡（即高度=logn）**的。
+【treap】 是一种弱平衡的二叉搜索树。treap 这个单词是 tree 和 heap 的组合，表明 treap 是一种由树和堆组合形成的数据结构。treap 的每个结点上除了关键字 key 之外，还要额外储存一个值 rk (priority)。treap 除了要满足关于 **key 的 BST 性质（左子 < 根 < 右子，即拍扁序是有序的）之外，还需满足关于 rk 的小根堆性质**。而 rk 是每个结点建立时随机生成的，因此 treap 是**期望平衡（即高度 = logn）**的。
 
-- split(p, pL ,pR, x) 将 **二叉树 p 分裂成 2 棵树 pL 和 pR ，其中 pL 包含所有 <=x 的结点，pR 包含剩下的节点**。
+- split(p, pL ,pR, x) 将 **二叉树 p 分裂成 2 棵树 pL 和 pR ，其中 pL 包含所有 <= x 的结点，pR 包含剩下的节点**。
 
-- merge(p, pL, pR) 将 **二叉树 pL 和 pR 重新合并成一棵树 p，注意此处要求 pL 和 pR 的值域是不重叠（没有交叉）的**。由于树的高度是期望log的，split&merge函数的复杂度都是**O(logn)**。并且分裂之后的 pL、pR、以及合并之后的p也同时满足heap性质，它们也是期望平衡的。
+- merge(p, pL, pR) 将 **二叉树 pL 和 pR 重新合并成一棵树 p，注意此处要求 pL 和 pR 的值域是不重叠（没有交叉）的**。由于树的高度是期望 log 的，split&merge 函数的复杂度都是 **O(logn)**。并且分裂之后的 pL、pR、以及合并之后的 p 也同时满足 heap 性质，它们也是期望平衡的。
 
-由于树的高度是期望log的，split&merge函数的复杂度都是**O(logn)**。并且分裂之后的 pL、pR、以及合并之后的p也同时满足heap性质，它们也是期望平衡的。
+由于树的高度是期望 log 的，split&merge 函数的复杂度都是**O(logn)**。并且分裂之后的 pL、pR、以及合并之后的 p 也同时满足 heap 性质，它们也是期望平衡的。
 
 ~~~c++
 namespace fhq_treap {
