@@ -400,11 +400,48 @@ debug(*p); //## *p = 7
 
 返回欧几里德范数 $\sqrt{x^2+y^2} $。
 
+#### 进制转换
+
+##### 将任意字符串形式的 2~36 进制数转化为 10 进制数
+
+使用 strtol()函数。
+
+函数原型：long int strtol(const char *nptr, char **endptr, int base)
+
+base 是要转化的数的进制，非法字符会赋值给 endptr，nptr 是要转化的字符。
+
+~~~c++
+string s = "0x16opsd";
+char *fw; //非法字符
+int a = strtol(s.c_str(), &fw, 16); //22, 0x16 = 22
+s = "123opop";
+int b = strtol(s.c_str(), &fw, 4); //将字符串中的四进制数(123)_4 -> 十进制数(27)_10
+cout << a << endl; // 22
+cout << b << endl; // 27
+cout << fw << endl; // opop
+~~~
+
+##### 将 10 进制数转化为任意字符串形式的 2~36 进制数
+
+使用 itoa() 函数。
+
+函数原型：char* itoa(int value, char* string, int radix);
+
+例如：itoa(num,str,2); num 是一个 int 型的，是要转换的 10 进制数，str 是转换结果，后面的值为目标进制。
+
+~~~c++
+int num = 27;
+char ret[6]; // 转换结果
+_itoa(num, ret, 4); // 第三个参数为目标进制
+cout << ret << endl; // 123，将十进制数(27)_10 -> 四进制数(123)_4
+~~~
+
 ## 数学
 
 ### 注意
 
-1. 模意义下出现减法时及时 + mod，遇到乘法就及时取 mod，以免后面要模多次造成 WA。
+1. 模意义下出现减法时及时 + mod，遇到乘法就及时取 mod，以免后面要模多次或者爆 long long 造成 WA。
+2. 取模之后算出的 gcd 就不是原先的 gcd。[如](https://ac.nowcoder.com/acm/contest/23479/J)
 
 ### 二进制拆分
 
@@ -486,6 +523,27 @@ $$
 可以推广到 $n$ 个整数间的裴蜀定理：
 
 设 $a_1,a_2,...,a_n$为 $n$ 个整数，$d$ 是它们的最大公约数，那么存在整数$x_1,x_2,...,x_n$ 使得 $x_1*a_1+x_2*a_2+...x_n*a_n=d$。
+
+### 整数惟一分解定理
+
+任何一个大于 1 的整数 $n$ 都可以分解成若干个素因数的连乘积，如果不计各个素因数的顺序，那么这种分解是惟一的。
+
+### 约数个数定理 / 约数和定理
+
+对于一个大于 1 正整数 $n$ 可以分解质因数：
+$$
+n=\prod_{i=1}^{k} p_{i}^{a_{i}}=p_{1}^{a_{1}} \cdot p_{2}^{a_{2}} \cdots p_{k}^{a_{k}}
+$$
+则 $n$ 的正约数的个数就是：
+$$
+f(n)=\prod_{i=1}^{k}\left(a_{i}+1\right)=\left(a_{1}+1\right)\left(a_{2}+1\right) \cdots\left(a_{k}+1\right)
+$$
+其中 $a_1, a_2, a_3, \cdots , a_k$ 是 $p_1, p_2, p_3, \cdots , p_k$ 的指数。
+
+$n$ 的 $f(n)$ 个正约数的和为：
+$$
+f(n)=(p_1^0+p_1^1+p_1^2+…p_1^{a_1})(p_2^0+p_2^1+p_2^2+…p_2^{a_2}) \cdots (p_k^0+p_k^1+p_k^2+…p_k^{a_k}）
+$$
 
 ## 计算几何
 

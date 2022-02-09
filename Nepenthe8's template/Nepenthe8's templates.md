@@ -620,27 +620,23 @@ bool MRtest(ll n) //素数返回1，合数返回0
 时间复杂度为 $O(\sqrt n)$。
 
 ~~~c++
-struct PrimeFactor {
-    ll num, tot;
-} pfac[N]; //1-index
-ll p_cnt; //记录素因数的种数
-void pff(ll x) { //分解质因数
-    for (ll i = 2; i * i <= x; i++) {
-        while (x % i == 0) {
-            x /= i;
-            if (pfac[p_cnt].num == i) 
-                pfac[p_cnt].tot++;
-            else 
-                pfac[++p_cnt].num = i, pfac[p_cnt].tot = 1;
+struct PF { //prime factorization
+    vector<pair<int, int>> p; // <num, tot>
+    PF (int x) {
+        for (int i = 2; i * i <= x; i++) {
+            if (x % i == 0) {
+                p.emplace_back(pair<int, int>(i, 0));
+                while (x % i == 0) {
+                    p.back().second++;
+                    x /= i;
+                }
+            }
+        }
+        if (x > 1) {
+            p.emplace_back(pair<int, int>(x, 1));
         }
     }
-    if (x > 1) {
-        if (pfac[p_cnt].num == x) 
-            pfac[p_cnt].tot++;
-        else 
-            pfac[++p_cnt].num = x, pfac[p_cnt].tot = 1;
-    }
-}
+};
 ~~~
 
 ### 组合数
@@ -1458,22 +1454,29 @@ int main() {
 ### 树状数组
 
 ~~~c++
-struct BIT {
-    BIT () { memset(tr, 0, sizeof(tr)); }
-    ll n, tr[N];
-    void update(ll x, ll k) {
-        for (; x <= n; x += x & -x) { //注意n的取值
-            tr[x] += k;
+template <typename T>
+struct Fenwick {
+    const int n;
+    vector<T> a;
+    Fenwick(int n) : n(n), a(n + 1) {}
+    void add(int x, T v) {
+        for (int i = x; i <= n; i += i & -i) {
+            a[i] += v;
         }
     }
-    ll query(ll x) {
-        ll res = 0ll;
-        for (; x; x -= x & -x) {
-            res += tr[x];
+    T sum(int x) {
+        T ans = 0;
+        for (int i = x; i > 0; i -= i & -i) {
+            ans += a[i];
         }
-        return res;
+        return ans;
+    }
+    T rangeSum(int l, int r) {
+        return sum(r) - sum(l);
     }
 };
+
+//Fenwick<int> tree(n);
 ~~~
 
 ### fhq_treap
