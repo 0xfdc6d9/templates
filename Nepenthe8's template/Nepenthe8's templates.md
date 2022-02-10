@@ -1265,70 +1265,90 @@ ll BSGS(ll a, ll b, ll m)
 
 ### 线段树
 
+本质就是区间合并。
+
+lazy 标记：是否能够在不通知叶子节点的情况下完成对父亲节点的修改。
+
+#### 动态开点
+
 ~~~c++
-namespace SegTree {
-    using T = long long;
-    const int MAXN = 2e5 + 5, NA = 0; // NA是标记不可用时的值
-    T tree[MAXN * 4], mark[MAXN * 4];
-    int sN;
-    T op(T a, T b) { return a + b; }
-    void upd(int p, T d, int len) //p为当前节点标号，d为待更新的值，len为当前节点包含的区间长度
-    {
-        tree[p] += len * d;
-        // (mark[p] == NA) ? (mark[p] = d) : (mark[p] += d);
-        mark[p] += d;
-    }
+#include <bits/stdc++.h>
+using namespace std;
+using ll = long long;
 
-    template <class It>
-    void build(It bg, int l, int r, int p)
-    {
-        if (l == r) { tree[p] = *(bg + l - 1); return; };
-        int mid = (l + r) / 2;
-        build(bg, l, mid, p * 2);
-        build(bg, mid + 1, r, p * 2 + 1);
-        tree[p] = op(tree[p * 2], tree[p * 2 + 1]);
-    }
-    template <class It>
-    void build(It bg, It ed) // 这里的bg, ed是迭代器
-    {
-        sN = ed - bg;
-        build(bg, 1, sN, 1);
-    }
+#define ls(x) tree[x].ls
+#define rs(x) tree[x].rs
+#define val(x) tree[x].val
+#define mark(x) tree[x].mark
+const int MAXV = 8e6;
+int L = 1, R = 1e5, cnt = 1;
+struct node
+{
+    ll val, mark;
+    int ls, rs;
+} tree[MAXV];
+void push_down(int p, int len)
+{
+    if (len <= 1)
+        return;
+    if (!ls(p))
+        ls(p) = ++cnt;
+    if (!rs(p))
+        rs(p) = ++cnt;
+    val(ls(p)) += mark(p) * (len / 2);
+    mark(ls(p)) += mark(p);
+    val(rs(p)) += mark(p) * (len - len / 2);
+    mark(rs(p)) += mark(p);
+    mark(p) = 0;
+}
+ll query(int l, int r, int p = 1, int cl = L, int cr = R)
+{
+    if (cl >= l && cr <= r)
+        return val(p);
+    push_down(p, cr - cl + 1);
+    ll mid = (cl + cr - 1) / 2, ans = 0;
+    if (mid >= l)
+        ans += query(l, r, ls(p), cl, mid);
+    if (mid < r)
+        ans += query(l, r, rs(p), mid + 1, cr);
+    return ans;
+}
+void update(int l, int r, int d, int p = 1, int cl = L, int cr = R)
+{ //[l, r]为查询的区间，[cl, cr]为当前节点包含的区间，p为当前节点标号，d为待更新的值
+    if (cl >= l && cr <= r)
+        return val(p) += d * (cr - cl + 1), mark(p) += d, void();
+    push_down(p, cr - cl + 1);
+    int mid = (cl + cr - 1) / 2;
+    if (mid >= l)
+        update(l, r, d, ls(p), cl, mid);
+    if (mid < r)
+        update(l, r, d, rs(p), mid + 1, cr);
+    val(p) = val(ls(p)) + val(rs(p));
+}
 
-    void push_down(int p, int len)
-    {
-        if (mark[p] == NA) return;
-        upd(p * 2, mark[p], len - len / 2);
-        upd(p * 2 + 1, mark[p], len / 2);
-        mark[p] = NA;
+int main()
+{
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int n, m; cin >> n >> m;
+    for (int i = 1; i <= n; i++) {
+        ll x;
+        cin >> x;
+        update(i, i, x);
     }
-
-    void update(int l, int r, T d, int p = 1, int cl = 1, int cr = sN) //[l, r]为查询的区间，[cl, cr]为当前节点包含的区间，p为当前节点标号，d为待更新的值
-    {
-        if (cl >= l && cr <= r) return upd(p, d, cr - cl + 1);
-        push_down(p, cr - cl + 1);
-        int mid = (cl + cr) / 2;
-        if (mid >= l) update(l, r, d, p * 2, cl, mid);
-        if (mid < r) update(l, r, d, p * 2 + 1, mid + 1, cr);
-        tree[p] = op(tree[p * 2], tree[p * 2 + 1]);
+    while (m--) {
+        int op;
+        cin >> op;
+        int x, y, k;
+        if (op == 1) {
+            cin >> x >> y >> k;
+            update(x, y, k);
+        } else {
+            cin >> x >> y;
+            cout << query(x, y) << "\n";
+        }
     }
-
-    T query(int l, int r, int p = 1, int cl = 1, int cr = sN)
-    {
-        if (cl >= l && cr <= r) return tree[p];
-        push_down(p, cr - cl + 1);
-        int mid = (cl + cr) / 2;
-        if (mid >= r)
-            return query(l, r, p * 2, cl, mid);
-        else if (mid < l)
-            return query(l, r, p * 2 + 1, mid + 1, cr);
-        else
-            return op(query(l, r, p * 2, cl, mid), query(l, r, p * 2 + 1, mid + 1, cr));
-    }
-} // namespace SegTree
-
-using namespace SegTree;
-
+    return 0;
+}
 ~~~
 
 [HDU-7116](https://vjudge.net/problem/HDU-7116)
