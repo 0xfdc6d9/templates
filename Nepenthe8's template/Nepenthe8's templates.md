@@ -1269,6 +1269,99 @@ ll BSGS(ll a, ll b, ll m)
 
 lazy 标记：是否能够在不通知叶子节点的情况下完成对父亲节点的修改。
 
+#### 单点修改+区间信息维护
+
+通过**重载结构体的加号**来实现区间的信息合并操作。
+
+~~~c++
+struct Node {
+    int mx;
+    vector<ll> val, pre;
+    Node(int x = 0) : mx(x), val(10 + 1, x), pre(10 + 1) {
+        for (int i = 1; i <= 10; i++) {
+            pre[i] = i;
+        }
+    }
+    Node operator+(const Node &node) const {
+        Node res;
+        res.mx = max(mx, node.mx);
+        for (int i = 1; i <= 10; i++) {
+            res.pre[i] = pre[i] * node.pre[i] % mod;
+            res.val[i] = (val[i] * node.pre[i] + node.val[i]) % mod;
+        }
+        return res;
+    }
+    ll operator()() const {
+        return val[mx + 1];
+    }
+};
+
+#define ls (v << 1)
+#define rs (ls | 1)
+#define tm ((tl + tr) >> 1)
+struct Segment {
+    int n;
+    vector<Node> nodes;
+    Segment(string &s) : n((int)s.size()), nodes(n << 2) {
+        function<void(int, int, int)> dfs = [&](int v, int tl, int tr) { // 节点标号，维护的区间
+            if (tl == tr) {
+                nodes[v] = Node(s[tm - 1] - '0');
+            } else {
+                dfs(ls, tl, tm);
+                dfs(rs, tm + 1, tr);
+                nodes[v] = nodes[ls] + nodes[rs];
+            }
+        };
+        dfs(1, 1, n);
+    }
+    void upd(int x, int y) {
+        function<void(int, int, int)> dfs = [&](int v, int tl, int tr) {
+            if (tl == tr) {
+                nodes[v] = Node(y);
+            } else {
+                if (x <= tm)
+                    dfs(ls, tl, tm);
+                else
+                    dfs(rs, tm + 1, tr);
+                nodes[v] = nodes[ls] + nodes[rs];
+            }
+        };
+        dfs(1, 1, n);
+    }
+    ll query(int x, int y) {
+        function<Node(int, int, int)> dfs = [&](int v, int tl, int tr) {
+            if (x <= tl && tr <= y)
+                return nodes[v];
+            if (y <= tm)
+                return dfs(ls, tl, tm);
+            if (x > tm)
+                return dfs(rs, tm + 1, tr);
+            return dfs(ls, tl, tm) + dfs(rs, tm + 1, tr);
+        };
+        return dfs(1, 1, n)();
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int n, q;
+    cin >> n >> q;
+    string s;
+    cin >> s;
+    Segment seg(s);
+    while (q--) {
+        int op, x, y;
+        cin >> op >> x >> y;
+        if (op == 1) {
+            seg.upd(x, y);
+        } else {
+            cout << seg.query(x, y) << "\n";
+        }
+    }
+    return 0;
+}
+~~~
+
 #### 动态开点
 
 ~~~c++
@@ -3612,6 +3705,27 @@ int main() {
 
 
 ## 其他
+
+### 对拍
+
+duipai.bat
+
+修改路径和对应的文件名字即可。
+
+~~~
+@echo off
+:loop
+    D:\.vscode\duipai\DataMaker.exe > data.txt
+:    D:\.vscode\duipai\pyDataMaker.py > data.txt
+    D:\.vscode\acacac.exe < data.txt > wa.txt
+    D:\.vscode\test.exe < data.txt > ac.txt
+    fc wa.txt ac.txt
+    if not errorlevel 1 goto loop
+pause
+goto loop
+
+: 因为是直接使用 exe，所以在对拍前先运行一遍写出来的程序。
+~~~
 
 ### 快读
 
