@@ -436,6 +436,25 @@ _itoa(num, ret, 4); // 第三个参数为目标进制
 cout << ret << endl; // 123，将十进制数(27)_10 -> 四进制数(123)_4
 ~~~
 
+#### is_sorted()
+
+判断序列是否单调非增/单调非降
+
+~~~c++
+vector<int> a = {1, 2, 2, 2, 3};
+vector<int> b = {1, 2, 3, 2, 3};
+
+vector<int> c = {3, 2, 2, 2, 1};
+vector<int> d = {1, 2, 2, 2, 1};
+cerr << is_sorted(a.begin(), a.end()) << endl; // 1
+cerr << is_sorted(b.begin(), b.end()) << endl; // 0
+
+cerr << is_sorted(c.rbegin(), c.rend()) << endl; // 1
+cerr << is_sorted(d.rbegin(), d.rend()) << endl; // 0
+~~~
+
+
+
 ## 数学
 
 ### 注意
