@@ -438,19 +438,29 @@ cout << ret << endl; // 123，将十进制数(27)_10 -> 四进制数(123)_4
 
 #### is_sorted()
 
-判断序列是否单调非增/单调非降
+判断序列是否有序，`less_equal<>()` 和 `greater_equal<>()` 表示严格单调，`less<>()` 和 `greater<>()` 表示单调。
 
 ~~~c++
-vector<int> a = {1, 2, 2, 2, 3};
-vector<int> b = {1, 2, 3, 2, 3};
+    vector<int> a = {1, 2, 2, 2, 3};
+    vector<int> b = {1, 2, 3, 2, 3};
 
-vector<int> c = {3, 2, 2, 2, 1};
-vector<int> d = {1, 2, 2, 2, 1};
-cerr << is_sorted(a.begin(), a.end()) << endl; // 1
-cerr << is_sorted(b.begin(), b.end()) << endl; // 0
+    vector<int> c = {3, 2, 2, 2, 1};
+    vector<int> d = {1, 2, 2, 2, 1};
+    cerr << is_sorted(a.begin(), a.end(), less<>()) << endl; // 1
+    cerr << is_sorted(b.begin(), b.end()) << endl; // 0
 
-cerr << is_sorted(c.rbegin(), c.rend()) << endl; // 1
-cerr << is_sorted(d.rbegin(), d.rend()) << endl; // 0
+    cerr << is_sorted(c.rbegin(), c.rend()) << endl; // 1
+    cerr << is_sorted(d.rbegin(), d.rend()) << endl; // 0
+
+    vector<int> e = {1, 2, 3, 4, 5}; //严格单调
+    cerr << is_sorted(e.begin(), e.end(), less_equal<>()) << endl; //1
+
+    vector<int> f = {5, 4, 3, 2, 1};
+    cerr << is_sorted(f.begin(), f.end(), greater_equal<>()) << endl; // 1
+
+    vector<int> g = {5, 5, 3, 3, 1};
+    cerr << is_sorted(g.begin(), g.end(), greater<>()) << endl; // 1
+    cerr << is_sorted(g.begin(), g.end(), greater_equal<>()) << endl; // 0
 ~~~
 
 
