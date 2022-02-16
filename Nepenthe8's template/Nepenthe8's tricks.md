@@ -240,7 +240,24 @@ for(int i = 0; i < row; i++)
         vec[i][j] = 1;
 ~~~
 
+#### tuple
 
+tuple 实例化的对象可以存储任意数量、任意类型的数据。
+
+~~~c++
+// 通过下标进行访问和赋值
+tuple<int, int, string> a;
+// get<int>(a) = 1; // compile error
+get<0>(a) = 1;
+cout << get<0>(a) << " " << get<1>(a) << " " << get<2>(a) << endl; // 1 0
+
+// c++14以上，也可以通过类型名（unique）进行访问和赋值
+tuple<int, double, string> b;
+get<int>(b) = 1;
+get<string>(b) = "hello";
+// get<char>(b) = 'a'; // compile error
+cout << get<0>(b) << " " << get<1>(b) << " " << get<2>(b) << endl; // 1 0 hello
+~~~
 
 ### 函数
 
