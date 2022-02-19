@@ -536,7 +536,7 @@ int p[maxm], pn; //prime[]
 bool np[maxm]; //not prime(bool)
 
 void Euler() {
-    np[1] = 1;
+    np[0] = np[1] = 1;
     for (int i = 2; i < maxm; ++i) { //循环到maxm是为了把后面的数加入的质数表中，同时筛掉合数
         if (not np[i]) {
             p[pn++] = i; //质数表，下标从0开始
