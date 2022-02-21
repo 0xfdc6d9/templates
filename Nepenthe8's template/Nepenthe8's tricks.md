@@ -480,7 +480,18 @@ cout << ret << endl; // 123，将十进制数(27)_10 -> 四进制数(123)_4
     cerr << is_sorted(g.begin(), g.end(), greater_equal<>()) << endl; // 0
 ~~~
 
+### 报错
 
+#### 不能使用某个类
+
+~~~
+auto tmp = array<int, 3> {1, 1, 2}; // 不允许使用不完整的类型
+deque<std::array<int, 3>> q{ {0, -1, 0} }; // 没有与参数列表匹配的重载函数
+
+unordered_set<int> st; // 未定义标识符
+~~~
+
+include 该类的头文件。
 
 ## 数学
 
