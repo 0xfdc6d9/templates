@@ -673,7 +673,7 @@ void init_C()
 ll C(ll n, ll m)
 {
     // assert(n >= m);
-    if (n >= m)
+    if (n < m)
         return 0;
     if (n == m || m == 0)
         return 1;
