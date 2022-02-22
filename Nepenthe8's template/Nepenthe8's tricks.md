@@ -571,6 +571,10 @@ bool curF(double x) { //出现分数？
 
 例题：[D - Integers Have Friends](https://codeforces.com/contest/1549/problem/D)。
 
+### 组合数的各种性质和定理
+
+[链接](https://blog.csdn.net/litble/article/details/75913032)
+
 ### 二项式定理
 
 根据此定理，可以将 $x+y$ 的任意次幂展开成和的形式。
