@@ -130,6 +130,23 @@ int main() {
 
 如[24dian](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=48558895)。
 
+### 求两个序列公共子序列的数量
+
+~~~c++
+for (int i = 1; i <= na; i++) { //找a、b公共子序列的数量
+    for (int j = 1; j <= nb; j++) {
+        if (a[i] != b[j])
+            (dp[i][j] = dp[i - 1][j] + dp[i][j - 1] - dp[i - 1][j - 1] + mod) %= mod;
+        else
+            // dp[i][j] = dp[i - 1][j] + dp[i][j - 1] - dp[i - 1][j - 1] + (dp[i - 1][j - 1] + 1);
+            //a、b末尾字符不一样的方案数+(a、b末尾字符一样，可以接上去，为dp[i - 1][j - 1]种方案 + a[i]和b[j]也可以形成一个公共子序列)
+            (dp[i][j] = dp[i - 1][j] + dp[i][j - 1] + 1) %= mod;
+    }
+}
+~~~
+
+[例题](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=48654923&headNav=acm)
+
 ## STL
 
 ### 容器
