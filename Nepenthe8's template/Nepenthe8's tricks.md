@@ -516,6 +516,7 @@ include 该类的头文件。
 
 1. 模意义下出现减法时及时 + mod，遇到乘法就及时取 mod，以免后面要模多次或者爆 long long 造成 WA。
 2. 取模之后算出的 gcd 就不是原先的 gcd。[如](https://ac.nowcoder.com/acm/contest/23479/J)
+3. 直接 cout 浮点数一定要设置小数点位数。
 
 ### 二进制拆分
 
