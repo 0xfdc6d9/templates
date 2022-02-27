@@ -130,6 +130,105 @@ int main() {
 
 如[24dian](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=48558895)。
 
+~~~c++
+/* find all the possible set of cards that has a valid solution but any solution involves fraction in the calculation.  */
+/* 找到所有可能的具有有效解决方案的卡片组，但任何解决方案都涉及计算中的分数。 */
+
+bool curF(double x) { //出现分数？
+    return fabs(ll(x) - x) > eps;
+}
+
+vector<vector<double> > ans;
+bool ok = 0;
+bool allCurF = 1; //是否所有的可行方案都存在分数
+
+void dfs2(vector<double> a, int &m, bool tg) {
+    if ((int)a.size() == 1) {
+        if (fabs(a[0] - m) < eps) {
+            if (!tg) 
+                allCurF = 0;
+            ok = 1;
+        }
+        return;
+    }
+    for (int i = 0; i < (int)a.size(); i++) {
+        for (int j = 0; j < (int)a.size(); j++) {
+            if (i == j)
+                continue;
+            vector<double> tmp = a;
+            double t1 = a[i], t2 = a[j];
+            //+
+            a.erase(a.begin() + max(i, j)); //保证删除正确位置的元素
+            a.erase(a.begin() + min(i, j));
+            a.emplace_back(t1 + t2);
+            dfs2(a, m, tg);
+
+            //-
+            a = tmp;
+            a.erase(a.begin() + max(i, j));
+            a.erase(a.begin() + min(i, j));
+            a.emplace_back(t1 - t2);
+            dfs2(a, m, tg);
+
+            //*
+            a = tmp;
+            a.erase(a.begin() + max(i, j));
+            a.erase(a.begin() + min(i, j));
+            a.emplace_back(t1 * t2);
+            dfs2(a, m, tg);
+
+            //divide
+            if (t2 != 0) {
+                a = tmp;
+                a.erase(a.begin() + max(i, j));
+                a.erase(a.begin() + min(i, j));
+                a.emplace_back(t1 / t2);
+                dfs2(a, m, tg | curF(t1 / t2));
+            }
+
+            //restore
+            a = tmp;
+        }
+    }
+}
+
+void dfs1(vector<double> a, int &m, int Last) { //顺序枚举4个数
+    if ((int)a.size() == 4) {
+        ok = 0;
+        allCurF = 1;
+        dfs2(a, m, 0);
+        if (ok && allCurF) {
+            ans.push_back(a);
+        }
+        return;
+    }
+    for (int i = Last; i <= 13; i++) {
+        a.push_back((double)i);
+        dfs1(a, m, i);
+        a.pop_back();
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int n, m; cin >> n >> m;
+    if (n < 4) {
+        cout << 0 << "\n";
+        return 0;
+    }
+    dfs1({}, m, 1);
+    ll sz = ans.size();
+
+    cout << sz << "\n";
+    for (int i = 0; i < sz; i++) {
+        for (int j = 0; j < 4; j++) {
+            cout << ans[i][j] << " \n"[j == 3];
+        }
+    }
+    return 0;
+}
+~~~
+
 ### 求两个序列公共子序列的数量
 
 ~~~c++
@@ -811,6 +910,22 @@ D 为有向图，D 的基图连通，并且所有顶点的出度与入度都相�
 在一张连通的无向图中，对于两个点 $\mathcal u$ 和 $\mathcal v$，如果无论删去哪个点（只能删去一个，且不能删 $\mathcal u$ 和 $\mathcal v$ 自己）都不能使它们不连通，我们就说 $\mathcal u$ 和 $\mathcal v$ **点双连通**。
 
 边双连通具有传递性，点双连通不具有传递性。
+
+## 数据结构
+
+### 线段树
+
+#### 维护前缀和的最小值
+
+[例题](https://atcoder.jp/contests/abc223/submissions/29656001)
+
+合并时：
+
+~~~c++
+res.minn = min(minn, sum + node.minn);
+~~~
+
+比较**左子树的前缀和最小值** 与 **左子树的区间和 + 右子树的前缀和最小值**，用较小值更新父节点的前缀和最小值。
 
 ## 搜索
 

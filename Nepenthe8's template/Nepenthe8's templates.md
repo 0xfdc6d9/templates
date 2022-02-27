@@ -1273,7 +1273,7 @@ lazy 标记：是否能够在不通知叶子节点的情况下完成对父亲节
 
 #### 单点修改+区间信息维护
 
-通过**重载结构体的加号**来实现区间的信息合并操作。
+通过**重载结构体的加号**来实现区间的信息合并操作。[例如](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=50872293)
 
 ~~~c++
 struct Node {
