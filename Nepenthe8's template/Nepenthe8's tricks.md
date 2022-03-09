@@ -1052,6 +1052,8 @@ for (int i = 1; i <= n; i++) {
 
 ### 二维前缀和/差分
 
+[二维差分 - 新之守护者](https://www.cnblogs.com/LMCC1108/p/10753451.html)
+
 二维前缀和
 $$
 sum[i][j]=a[i][j]+sum[i-1][j]+sum[i][j-1]-sum[i-1][j-1]
