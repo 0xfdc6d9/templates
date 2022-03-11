@@ -610,6 +610,56 @@ os << "赤红" << "'s age is " << 11 << "\n";
 std::string s = os.str();
 ~~~
 
+### 扩展 STL
+
+#### rope
+
+[例题](https://ac.nowcoder.com/acm/problem/17242)
+
+来自 pb_ds 库 (Policy-Based Data Structures)。
+
+类似封装好的块状链表，复杂度 $\log n$ 或者 $n^{0.5}$，适合用于大量、冗长的串操作。
+
+基本操作：
+
+~~~c++
+#include <ext/rope>  // 头文件
+using namespace __gnu_cxx;  // 注意名称空间
+
+rope<int> rp;
+
+int main() {
+    rp.push_back(x); // 在末尾插入 x
+    rp.insert(pos, x); // 在 pos 处插入 x
+    rp.erase(pos, x); // 在 pos 处删除 x 个元素
+    rp.length(); // 返回 rp 的大小
+    rp.size(); // 同上
+    rp.replace(pos, x); // 将 pos 处的元素替换成 x
+    rp.substr(pos, x); // 从 pos 处开始提取 x 个元素
+    rp.copy(pos, x, s); // 从 pos 处开始复制 x 个元素到 s 中
+    rp[x]; // 访问第 x 个元素
+    rp.at(x); // 同上
+    return 0;
+}
+
+// Shuffle Cards 代码
+void solve() {
+    rope<int> rp;
+    int n, m;
+    cin >> n >> m;
+    for (int i = 0; i < n; i++) {
+        rp.push_back(i + 1);
+    }
+    for (int p, s; m--; ) {
+        cin >> p >> s;
+        rp = rp.substr(p - 1, s) + rp.substr(0, p - 1) + rp.substr(p + s - 1, n - s - (p - 1));
+    }
+    for (int i = 0; i < n; i++) {
+        cout << rp[i] << " \n"[i == n - 1];
+    }
+}
+~~~
+
 ### 报错
 
 #### 不能使用某个类
