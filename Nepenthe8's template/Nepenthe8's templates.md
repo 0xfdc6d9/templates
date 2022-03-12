@@ -1591,7 +1591,7 @@ struct Fenwick {
     }
 };
 
-//Fenwick<int> tree(n);
+//Fenwick<int> fen(n);
 ~~~
 
 ### fhq_treap
@@ -1828,7 +1828,7 @@ using namespace fhq_treap;
 
 ### 主席树
 
-求静态区间第k小。
+[求](https://www.luogu.com.cn/problem/P3834)静态区间第k小。
 
 ~~~c++
 namespace hjt_tree {
