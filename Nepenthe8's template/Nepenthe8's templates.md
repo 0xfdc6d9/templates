@@ -1885,6 +1885,63 @@ int main() {
 }
 ~~~
 
+[求](https://www.luogu.com.cn/problem/SP3267)区间不同数字数量。
+
+查询的时候改成权值线段树的query。
+
+~~~c++
+struct Node { //每个点维护的是值域上值的个数
+    int lf, rt;
+    ll sum; //该节点的左节点为hjt[lf]，右节点为hjt[rt]，值为sum
+} hjt[N * 40];
+int tot = 0, root[N];
+//pre的作用是now要依赖以上一个版本的权值线段树来建立
+void insert(int l, int r, int pre, int &now, ll p) {
+    hjt[++tot] = hjt[pre]; //等于上一个版本线段树的当前节点
+    now = tot;
+    ++hjt[now].sum;
+    if (l == r) return;
+    int m = (l + r) >> 1;
+    if (p <= m) insert(l, m, hjt[pre].lf, hjt[now].lf, p);
+    else insert(m + 1, r, hjt[pre].rt, hjt[now].rt, p);
+}
+//搜索到的当前节点所维护的区间为[l, r]
+//我们当前要查询[L, R]的权值线段树，Lnow表示L - 1版本的权值线段树遍历到的当前节点，Rnow表示R版本的权值线段树遍历到的当前节点
+ll query(int l, int r, int Lnow, int Rnow, int ql, int qr) {
+    if (ql <= l && r <= qr) {
+        return hjt[Rnow].sum - hjt[Lnow].sum;
+    }
+    int m = (l + r) >> 1;
+    ll ans = 0;
+    if (ql <= m)
+        ans += query(l, m, hjt[Lnow].lf, hjt[Rnow].lf, ql, qr);
+    if (qr > m)
+        ans += query(m + 1, r, hjt[Lnow].rt, hjt[Rnow].rt, ql, qr);
+    return ans;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int n, m;
+    cin >> n;
+    vector<int> a(n + 1);
+    vector<int> pre(N, 0);
+    vector<int> las(n + 1);
+    for (ll i = 1; i <= n; i++) {
+        cin >> a[i];
+        las[i] = pre[a[i]] + 1; //整体向右偏移一位
+        pre[a[i]] = i;
+        insert(1, n, root[i - 1], root[i], las[i]);
+    }
+    cin >> m;
+    for (ll i = 1, l, r; i <= m; i++) {
+        cin >> l >> r;
+        cout << query(1, n, root[l - 1], root[r], 1, l) << "\n";
+    }
+    return 0;
+}
+~~~
+
 ### 莫队
 
 莫队可以解决一类 **离线区间询问** 问题，适用性极为广泛。同时将其加以扩展，便能处理树上路径询问（树上莫队）以及支持修改（带修莫队）操作。
