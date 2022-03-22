@@ -1833,26 +1833,27 @@ using namespace fhq_treap;
 ~~~c++
 namespace hjt_tree {
     vector<ll> v;
-    ll getid(ll x) { return lower_bound(v.begin(), v.end(), x) - v.begin() + 1; }
+    int getid(ll x) { return lower_bound(v.begin(), v.end(), x) - v.begin() + 1; }
     struct Node { //每个点维护的是值域上值的个数
-        ll lf, rt, sum; //该节点的左节点为hjt[lf]，右节点为hjt[rt]，值为sum
+        int lf, rt; //该节点的左节点为hjt[lf]，右节点为hjt[rt]，值为sum
+        ll sum;
     } hjt[N * 40];
-    ll count = 0, root[N];
+    int count = 0, root[N];
     //pre的作用是now要依赖以上一个版本的权值线段树来建立
-    void insert(ll l, ll r, ll pre, ll &now, ll p) {
+    void insert(int l, int r, int pre, int &now, int p) {
         hjt[++count] = hjt[pre]; //等于上一个版本线段树的当前节点
         now = count;
         ++hjt[now].sum;
         if (l == r) return;
-        ll m = (l + r) >> 1;
+        int m = (l + r) >> 1;
         if (p <= m) insert(l, m, hjt[pre].lf, hjt[now].lf, p);
         else insert(m + 1, r, hjt[pre].rt, hjt[now].rt, p);
     }
     //搜索到的当前节点所维护的区间为[l, r]
     //我们当前要查询[L, R]的权值线段树，Lnow表示L - 1版本的权值线段树遍历到的当前节点，Rnow表示R版本的权值线段树遍历到的当前节点
-    ll query(ll l, ll r, ll Lnow, ll Rnow, ll kth) {
+    ll query(int l, int r, int Lnow, int Rnow, int kth) {
         if (l == r) return l;
-        ll m = (l + r) >> 1;
+        int m = (l + r) >> 1;
         //决定向左半边递归还是右半边递归
         //看减出来的这个权值线段树的当前节点其左子树上有多少个数
         ll tmp = hjt[hjt[Rnow].lf].sum - hjt[hjt[Lnow].lf].sum;
@@ -1862,22 +1863,21 @@ namespace hjt_tree {
 }
 using namespace hjt_tree;
 
-ll n, m;
-ll a[N];
-
 int main() {
     ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int n, m;
     cin >> n >> m;
-    for (ll i = 1; i <= n; i++) {
+    vector<ll> a(n + 1);
+    for (int i = 1; i <= n; i++) {
         cin >> a[i];
         v.push_back(a[i]);
     }
     sort(v.begin(), v.end());
     v.erase(unique(v.begin(), v.end()), v.end());
-    for (ll i = 1; i <= n; i++) {
+    for (int i = 1; i <= n; i++) {
         insert(1, n, root[i - 1], root[i], getid(a[i]));
     }
-    for (ll i = 1, l, r, k; i <= m; i++) {
+    for (int i = 1, l, r, k; i <= m; i++) {
         cin >> l >> r >> k;
         cout << v[query(1, n, root[l - 1], root[r], k) - 1] << "\n";
     }
