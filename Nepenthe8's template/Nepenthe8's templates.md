@@ -2785,6 +2785,8 @@ int main() {
 
 设有 $n$ 个点 $m$ 条边，tarjan 缩点的时间复杂度为 $\mathcal O(n + m)$。
 
+可以得到强连通分量个数为 col 。
+
 有向图的 tarjan 和无向图的 tarjan 不一样（在[样例](https://www.luogu.com.cn/problem/P3387)中用无向图的 dfs 会造成越界）。
 
 ~~~c++
