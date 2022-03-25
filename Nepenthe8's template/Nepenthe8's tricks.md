@@ -809,6 +809,7 @@ $$
 ### 注意
 
 1. 使用邻接矩阵存图时，如题目无特殊说明，记得考虑重边、自环的情况
+2. 注意题目给出的图是不是联通的，[比如](https://atcoder.jp/contests/abc231/tasks/abc231_d)判环时若图不连通则需要对 $n$ 个点分别进行 1 次 dfs。
 
 ### 打印路径的两种方法
 
@@ -890,7 +891,7 @@ int main() {
         g[u].emplace_back(v);
         g[v].emplace_back(u);
     }
-    for (int i = 1; i <= n; i++) { //可能不连通
+    for (int i = 1; i <= n; i++) { //图可能不连通
         if (!vis[i])
             dfs(1, i, -1);
     }
