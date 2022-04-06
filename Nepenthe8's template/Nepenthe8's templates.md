@@ -2080,11 +2080,11 @@ int main() {
 同时使用路径压缩和启发式合并之后，并查集的每个操作平均时间仅为 $O(\alpha(n))$ ，其中 $\alpha$ 为阿克曼函数的反函数，其增长极其缓慢，也就是说其单次操作的平均运行时间可以认为是一个很小的常数。
 
 ~~~c++
-class Dsu {
-public:
-    static const int MAXN = 2e5 + 7;
-    int fa[MAXN], rk[MAXN];
-    void init(int n) {
+struct Dsu {
+    vector<int> fa, rk;
+    Dsu(int n) {
+        fa.resize(n + 1);
+        rk.resize(n + 1);
         for (int i = 1; i <= n; i++) {
             fa[i] = i, rk[i] = 1;
         }
@@ -2104,7 +2104,9 @@ public:
             rk[x]++;
     }
     bool isSame(int x, int y) { return find(x) == find(y); }
-} dsu;
+};
+
+//Dsu dsu(n);
 ~~~
 
 #### 拓展域并查集
