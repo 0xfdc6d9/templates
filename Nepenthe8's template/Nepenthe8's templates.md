@@ -44,44 +44,35 @@ ull hashs(string s)
 ### KMP
 
 ~~~c++
-namespace KMP {
-    int next[N];
-    void kmp_pre(string x, int m) {
-        int j = next[0] = -1;
-        int i = 0;
-        while (i < m) {
-            while (-1 != j && x[i] != x[j])
-                j = next[j];
-            next[++i] = ++j;
+string s, p;
+cin >> s >> p;
+vector<int> pmt(int(p.length())); // 表示在每一位失配时应跳转到的索引，Partial Match Table，部分匹配表
+
+auto get_pmt = [&](string s) {
+    for (int i = 1, j = 0; i < int(s.length()); ++i) {
+        while (j && s[i] != s[j])
+            j = pmt[j - 1];
+        if (s[i] == s[j])
+            j++;
+        pmt[i] = j;
+    }
+};
+
+auto kmp = [&](string s, string p) {
+    for (int i = 0, j = 0; i < int(s.length()); ++i) {
+        while (j && s[i] != p[j])
+            j = pmt[j - 1];
+        if (s[i] == p[j])
+            j++;
+        if (j == int(p.length())) {
+            cout << i - j + 2 << '\n';  // 因为要1-index，所以是+2，输出p在s中出现的位置
+            j = pmt[j - 1];
         }
     }
-    void preKMP(string x, int m) {
-        int j = next[0] = -1; //初始化前缀末尾
-        int i = 0; //初始化后缀末尾
-        while (i < m) {
-            while (-1 != j && x[i] != x[j]) //前后缀不相同
-                j = next[j];
-            if (x[++i] == x[++j]) next[i] = next[j]; //前后缀相同
-            else next[i] = j;
-        }
-    }
-    int kmp_count(string x, int m, string y, int n) { //x 是模式串，y 是文本串
-        int j = 0, i = 0, ret = 0;
-        preKMP(x, m);
-        // kmp_pre(x, m);
-        while (i < n) {
-            while (-1 != j && y[i] != x[j])
-                j = next[j];
-            ++i, ++j;
-            if (j >= m) {
-                ++ret;
-                j = next[j];
-            }
-        }
-        return ret;
-    }
-}
-using namespace KMP;
+};
+
+get_pmt(p);
+kmp(s, p);
 ~~~
 
 ### Z Algorithm
@@ -505,6 +496,22 @@ int main() {
 ~~~
 
 ## 数学
+
+### 快速幂
+
+~~~c++
+ll powmod(ll a, ll b) {
+    ll res = 1;
+    a %= mod;
+    assert(b >= 0);
+    for (; b; b >>= 1) {
+        if (b & 1)
+            res = res * a % mod;
+        a = a * a % mod;
+    }
+    return res;
+}
+~~~
 
 ### 素数筛
 
@@ -1950,6 +1957,13 @@ int main() {
 
 做法：所有询问离线后排序，顺序处理每个询问，暴力从上一个区间的答案转移到下一个区间答案。
 
+支持 O(1) 插入/删除同时维护的信息，比较常见的有：
+
+- 区间和
+- 区间颜色数量
+- 区间众数
+- 区间相同数字对数
+
 莫队的~~玄学~~优化：
 
 1. 奇偶性优化（因为顺序发生了变化所以调试起来不是很方便）
@@ -2070,8 +2084,6 @@ int main() {
     return 0;
 }
 ~~~
-
-
 
 ## 图论
 
@@ -2423,7 +2435,7 @@ using namespace Dijkstra;
 
 具体操作为：用队列来保存待优化的结点（类似于 BFS ），优化时每次取出队首结点，并且用队首节点来对最短路径进行更新并进行松弛操作。如果要对所连点的最短路径需要更新，且该点不在当前的队列中，就将该点加入队列。然后不断进行松弛操作，直至队列空为止。
 
-总结来说就是，只要某个点 u 的 dis[u] 得到更新，并且此时不在队列中，就将其入队，目的是为了以u为基点进一步更新它的邻接点 v 的 dis[v] 。
+总结来说就是，只要某个点 u 的 dis[u] 得到更新，并且此时不在队列中，就将其入队，目的是为了以 u 为基点进一步更新它的邻接点 v 的 dis[v] 。
 
 这个是队列实现，有时候改成栈实现会更加快。
 
@@ -2551,6 +2563,8 @@ int kruskal(int n) {
 ~~~
 
 #### Prim
+
+Prim 的思想是随便选一个点，然后看他周围的点，找一个最小的路径连接的另一个点，再将这个点吃进去，然后现在你的集合有两个点，将你拥有的两个点看做一个大结点，再找周围的点，选一个最短路径连接的另一个点，再吃进去，最后，将所有点吃完算法就完成了。
 
 ~~~c++
 namespace Prim{
@@ -2887,8 +2901,9 @@ namespace Dinic {
             q.pop();
             for (ll i = head[p]; ~i; i = g[i].next) {
                 ll to = g[i].to, vol = g[i].w;
-                if (vol > 0 && lv[to] == -1)
+                if (vol > 0 && lv[to] == -1) {
                     lv[to] = lv[p] + 1, q.push(to);
+                }
             }
         }
         return lv[t] != -1; // 如果汇点未访问过说明已经无法达到汇点，此时返回false
@@ -2896,8 +2911,9 @@ namespace Dinic {
 
     ll dfs(ll p = s, ll flow = INF)
     {
-        if (p == t)
+        if (p == t) {
             return flow;
+        }
         ll rmn = flow; // 剩余的流量
         for (ll i = cur[p]; ~i && rmn; i = g[i].next) // 如果已经没有剩余流量则退出
         {
@@ -2916,8 +2932,9 @@ namespace Dinic {
 
     ll dinic() {
         ll ans = 0;
-        while (bfs())
+        while (bfs()) {
             ans += dfs();
+        }
         return ans;
     }
 }
