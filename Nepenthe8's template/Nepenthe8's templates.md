@@ -1383,14 +1383,13 @@ using ll = long long;
 #define val(x) tree[x].val
 #define mark(x) tree[x].mark
 const int MAXV = 8e6;
-int L = 1, R = 1e5, cnt = 1;
-struct node
-{
+int L = 1, R = 1e5, cnt = 1; // 注意修改边界R
+struct node {
     ll val, mark;
     int ls, rs;
 } tree[MAXV];
-void push_down(int p, int len)
-{
+
+void push_down(int p, int len) {
     if (len <= 1)
         return;
     if (!ls(p))
@@ -1403,8 +1402,8 @@ void push_down(int p, int len)
     mark(rs(p)) += mark(p);
     mark(p) = 0;
 }
-ll query(int l, int r, int p = 1, int cl = L, int cr = R)
-{
+
+ll query(int l, int r, int p = 1, int cl = L, int cr = R) {
     if (cl >= l && cr <= r)
         return val(p);
     push_down(p, cr - cl + 1);
@@ -1415,8 +1414,9 @@ ll query(int l, int r, int p = 1, int cl = L, int cr = R)
         ans += query(l, r, rs(p), mid + 1, cr);
     return ans;
 }
-void update(int l, int r, int d, int p = 1, int cl = L, int cr = R)
-{ //[l, r]为查询的区间，[cl, cr]为当前节点包含的区间，p为当前节点标号，d为待更新的值
+
+ //[l, r]为查询的区间，[cl, cr]为当前节点包含的区间，p为当前节点标号，d为待更新的值
+void update(int l, int r, int d, int p = 1, int cl = L, int cr = R) {
     if (cl >= l && cr <= r)
         return val(p) += d * (cr - cl + 1), mark(p) += d, void();
     push_down(p, cr - cl + 1);
@@ -1428,10 +1428,11 @@ void update(int l, int r, int d, int p = 1, int cl = L, int cr = R)
     val(p) = val(ls(p)) + val(rs(p));
 }
 
-int main()
-{
-    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
-    int n, m; cin >> n >> m;
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(0);
+    int n, m;
+    cin >> n >> m;
     for (int i = 1; i <= n; i++) {
         ll x;
         cin >> x;
@@ -1452,6 +1453,8 @@ int main()
     return 0;
 }
 ~~~
+
+#### 区间修改+区间查询
 
 [HDU-7116](https://vjudge.net/problem/HDU-7116)
 
@@ -1570,8 +1573,6 @@ int main() {
     return 0;
 }
 ~~~
-
-
 
 ### 树状数组
 
