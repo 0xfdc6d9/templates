@@ -1373,6 +1373,12 @@ int main() {
 
 #### 动态开点
 
+通常来说，线段树占用空间是总区间长 $\mathcal O(n)$ 的常数倍，空间复杂度是 $\mathcal O(n)$。然而，有时候 $n$ 很巨大，而我们又不需要使用所有的节点，这时便可以**动态开点**——不再一次性建好树，而是一边修改、查询一边建立。我们不再用 $p \times 2$ 和 $p \times 2+1$ 代表左右儿子，而是用 `ls` 和 `rs` 记录左右儿子的编号。设总查询次数为 $m$，则这样的总空间复杂度为 $\mathcal O(m \log n)$。
+
+比起普通线段树，动态开点线段树有一个优势：它能够处理零或负数位置。此时，求 `mid` 时不能用 `(cl+cr)/2`，而要用 `(cl+cr-1)/2`（因为 `cl` 等于 `cr` 时会退出递归，所以是正确的）
+
+动态开点线段树不需要 build，通常用在没有提供初始数据的场合（例如初始全0）。
+
 ~~~c++
 #include <bits/stdc++.h>
 using namespace std;
@@ -1380,6 +1386,7 @@ using ll = long long;
 
 #define ls(x) tree[x].ls
 #define rs(x) tree[x].rs
+// MAXV一般能开多大开多大，例如内存限制128M时可以开到八百万左右
 const int MAXV = 8e6;
 int L = 1, R = 1e5, cnt = 1; // 注意修改边界R
 struct node {
@@ -1463,120 +1470,99 @@ int main() {
 
 #### 区间修改+区间查询
 
-[HDU-7116](https://vjudge.net/problem/HDU-7116)
-
 ~~~c++
 #include <bits/stdc++.h>
 using namespace std;
 using ll = long long;
-using pii = pair<ll, ll>;
-const double eps = 1e-6;
-const int N = 2e5 + 7;
-// const int N = 7;
-const int INF = 0x3f3f3f3f;
-const int mod = 998244353; //998244353
-const int dir[8][2] = {0, 1, 0, -1, 1, 0, -1, 0,/* dir4 */ -1, -1, -1, 1, 1, -1, 1, 1};
-ll gcd(ll a, ll b) { return b == 0 ? a : gcd(b, a % b); }
-ll powmod(ll a, ll b) { ll res = 1; a %= mod; assert(b >= 0); for (; b; b >>= 1) { if (b & 1) res = res * a % mod; a = a * a % mod; } return res; }
-template <class T> bool ckmin(T &a, const T &b) { return b < a ? a = b, 1 : 0; }
-template <class T> bool ckmax(T &a, const T &b) { return a < b ? a = b, 1 : 0; }
-template <class T> void debug(const string &Name, const T &a) { cerr << "# " << Name << ": " << a << endl; }
-template <class A, class... B> void debug(const string &Name, const A &a, const B &...b) { cerr << "# " << Name << ": " << a << endl; debug(b...); }
 
-inline ll lowbit(ll x) { return x & -x; }
-
-inline int ls(int x) { return x << 1; }
-inline int rs(int x) { return x << 1 | 1; }
-struct Node {
+const int N = 500010;
+int a[N];
+struct Tree {
+    ll sum, lazy;
     int l, r;
-    ll x, sum;
-    int lazy;
-    int flag;
-} tree[N << 2];
-
-void pushD(int p) {
-    if (tree[p].lazy == 0)
-        return;
-    (tree[ls(p)].sum *= powmod(2, tree[p].lazy)) %= mod;
-    (tree[rs(p)].sum *= powmod(2, tree[p].lazy)) %= mod;
-    tree[ls(p)].lazy += tree[p].lazy;
-    tree[rs(p)].lazy += tree[p].lazy;
-    tree[p].lazy = 0;
-}
+} tree[N * 4];
 
 void pushUp(int p) {
-    tree[p].flag = tree[ls(p)].flag & tree[rs(p)].flag;
-    (tree[p].sum = tree[ls(p)].sum + tree[rs(p)].sum) %= mod;
+    tree[p].sum = tree[p << 1].sum + tree[p << 1 | 1].sum;
 }
 
-void buildT(int l, int r, int p = 1) {
+void pushDown(int p) {
+    auto &root = tree[p], &ls = tree[p << 1], &rs = tree[p << 1 | 1];
+    if (root.lazy) {
+        ls.lazy += root.lazy;
+        ls.sum += root.lazy * (ls.r - ls.l + 1);
+        rs.lazy += root.lazy;
+        rs.sum += root.lazy * (rs.r - rs.l + 1);
+        root.lazy = 0;
+    }
+}
+
+void build(int l, int r, int p = 1) {
     tree[p].l = l, tree[p].r = r;
-    tree[p].sum = tree[p].lazy = tree[p].flag = 0;
     if (l == r) {
-        cin >> tree[p].x;
-        tree[p].sum = tree[p].x;
-        if (tree[p].x == lowbit(tree[p].x))
-            tree[p].flag = 1;
+        tree[p].sum = a[r];
+        tree[p].lazy = 0;
         return;
     }
-    int mid = (l + r) >> 1;
-    buildT(l, mid, ls(p));
-    buildT(mid + 1, r, rs(p));
+    int mid = l + r >> 1;
+    build(l, mid, p << 1);
+    build(mid + 1, r, p << 1 | 1);
     pushUp(p);
 }
 
-void upd(int l, int r, int p = 1) { //[l, r]为查询区间
-    int cl = tree[p].l, cr = tree[p].r;
-    if (l <= cl && cr <= r && tree[p].flag) { //区间都可以直接乘2
-        (tree[p].sum *= 2) %= mod;
-        ++tree[p].lazy;
+void upd(int l, int r, ll v, int p = 1) {
+    if (tree[p].l >= l && tree[p].r <= r) {
+        tree[p].sum += (tree[p].r - tree[p].l + 1) * v;
+        tree[p].lazy += v;
         return;
     }
-    if (cl == cr) { //暴力修改，最多log次
-        tree[p].x = tree[p].sum = tree[p].x + lowbit(tree[p].sum); //叶子节点才用x，存a[i]，用于判断它是否能够直接乘2
-        if (tree[p].x == lowbit(tree[p].x))
-            tree[p].flag = 1;
-        return;
-    }
-    pushD(p);
-    int mid = (cl + cr) >> 1;
+    pushDown(p);
+    int mid = tree[p].l + tree[p].r >> 1;
     if (l <= mid)
-        upd(l, r, ls(p));
-    if (mid + 1 <= r)
-        upd(l, r, rs(p));
+        upd(l, r, v, p << 1);
+    if (r > mid)
+        upd(l, r, v, p << 1 | 1);
     pushUp(p);
 }
 
 ll query(int l, int r, int p = 1) {
-    int cl = tree[p].l, cr = tree[p].r;
-    if (l <= cl && cr <= r) {
+    if (tree[p].l >= l && tree[p].r <= r) {
         return tree[p].sum;
     }
-    pushD(p);
-    ll ans = 0;
-    int mid = (cl + cr) >> 1;
+    pushDown(p);
+    int mid = tree[p].l + tree[p].r >> 1;
+    ll res = 0;
     if (l <= mid)
-        (ans += query(l, r, ls(p))) %= mod;
-    if (mid + 1 <= r)
-        (ans += query(l, r, rs(p))) %= mod;
-    return ans;
+        res += query(l, r, p << 1);
+    if (r > mid)
+        res += query(l, r, p << 1 | 1);
+    return res;
 }
 
 int main() {
-    ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
-    int T; cin >> T;
-    while (T--) {
-        int n; cin >> n;
-        buildT(1, n);
-        int m; cin >> m;
-        while (m--) {
-            int op, l, r; cin >> op >> l >> r;
-            if (op == 1) 
-                upd(l, r);
-            else 
-                cout << query(l, r) << "\n";
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, m;
+    cin >> n >> m;
+    for (int i = 1; i <= n; i++) {
+        cin >> a[i];
+    }
+    build(1, n);
+    while (m--) {
+        int op;
+        cin >> op;
+        if (op == 1) {
+            int x, y, k;
+            cin >> x >> y >> k;
+            upd(x, y, k);
+        } else {
+            int x, y;
+            cin >> x >> y;
+            cout << query(x, y) << "\n";
         }
     }
+
     return 0;
 }
 ~~~
