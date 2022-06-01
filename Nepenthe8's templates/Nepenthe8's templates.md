@@ -1383,7 +1383,7 @@ using ll = long long;
 const int MAXV = 8e6;
 int L = 1, R = 1e5, cnt = 1; // 注意修改边界R
 struct node {
-    ll val, mark;
+    ll sum, lazy;
     int ls, rs;
 } tree[MAXV];
 
@@ -1394,21 +1394,21 @@ void pushDown(int p, int len) {
         ls(p) = ++cnt;
     if (!rs(p))
         rs(p) = ++cnt;
-    tree[(ls(p))].val += tree[p].mark * (len / 2);
-    tree[ls(p)].mark += tree[p].mark;
-    tree[rs(p)].val += tree[p].mark * (len - len / 2);
-    tree[rs(p)].mark += tree[p].mark;
-    tree[p].mark = 0;
+    tree[(ls(p))].sum += tree[p].lazy * (len / 2);
+    tree[ls(p)].lazy += tree[p].lazy;
+    tree[rs(p)].sum += tree[p].lazy * (len - len / 2);
+    tree[rs(p)].lazy += tree[p].lazy;
+    tree[p].lazy = 0;
 }
 
 void pushUp(int p) {
-    tree[p].val = tree[ls(p)].val + tree[rs(p)].val;
+    tree[p].sum = tree[ls(p)].sum + tree[rs(p)].sum;
 }
 
 //                                  current
 ll query(int l, int r, int p = 1, int cl = L, int cr = R) {
     if (cl >= l && cr <= r) {
-        return tree[p].val;
+        return tree[p].sum;
     }
     pushDown(p, cr - cl + 1);
     ll mid = (cl + cr - 1) / 2, ans = 0;
@@ -1422,8 +1422,8 @@ ll query(int l, int r, int p = 1, int cl = L, int cr = R) {
 //[l, r]为查询的区间，[cl, cr]为当前节点包含的区间，p为当前节点标号，d为待更新的值
 void update(int l, int r, int d, int p = 1, int cl = L, int cr = R) {
     if (cl >= l && cr <= r) {
-        tree[p].val += d * (cr - cl + 1);
-        tree[p].mark += d;
+        tree[p].sum += d * (cr - cl + 1);
+        tree[p].lazy += d;
         return;
     }
     pushDown(p, cr - cl + 1);
