@@ -1244,3 +1244,13 @@ vector<vector<int>> allPathsSourceTarget(vector<vector<int>>& graph) {
 }
 ~~~
 
+### 本地测试运行时间
+
+在 main() 开始时给 startTime 赋值：`startTime = clock();`
+
+~~~c++
+clock_t startTime;
+double getCurrentTime() {
+    return (double)(clock() - startTime) / CLOCKS_PER_SEC;
+}
+~~~
