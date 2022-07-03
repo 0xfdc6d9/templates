@@ -2523,6 +2523,8 @@ using namespace Floyd;
 
 #### Kruskal
 
+时间复杂度：$m \log m$
+
 ~~~c++
 int fa[N];
 struct Edge {
@@ -2559,6 +2561,12 @@ int kruskal(int n) {
 #### Prim
 
 Prim 的思想是随便选一个点，然后看他周围的点，找一个最小的路径连接的另一个点，再将这个点吃进去，然后现在你的集合有两个点，将你拥有的两个点看做一个大结点，再找周围的点，选一个最短路径连接的另一个点，再吃进去，最后，将所有点吃完算法就完成了。
+
+暴力：$O(n^2 + m)$
+
+二叉堆：$O((n + m) \log n)$
+
+Fib 堆：$O(n \log n + m)$
 
 ~~~c++
 namespace Prim{
