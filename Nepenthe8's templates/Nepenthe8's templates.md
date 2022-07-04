@@ -1270,7 +1270,7 @@ ll BSGS(ll a, ll b, ll m)
 
 例题：[HDU-6956](https://vjudge.net/problem/HDU-6956)。
 
-## 数据机构
+## 数据结构
 
 ### 线段树
 
