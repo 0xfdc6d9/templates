@@ -2742,6 +2742,8 @@ int main() {
 
 ### 二分图
 
+#### 二分图最大匹配
+
 dfs版本的匈牙利算法，时间复杂度为$O(VE)$。
 
 一些定义和定理：
@@ -2795,6 +2797,119 @@ int main() {
             ++mtc;
     }
     cout << mtc << "\n";
+    return 0;
+}
+~~~
+
+#### 二分图最大权匹配
+
+匈牙利算法又称为 **KM** 算法，可以在 $O(n^3)$ 时间内求出二分图的 最大权完美匹配。
+
+考虑到二分图中两个集合中的点并不总是相同，为了能应用 KM 算法解决二分图的最大权匹配，需要先作如下处理：将两个集合中点数比较少的补点，使得两边点数相同，再将不存在的边权重设为 0，这种情况下，问题就转换成求最大权完美匹配问题，从而能应用 KM 算法求解。
+
+[Luogu P1559](https://www.luogu.com.cn/problem/P1559)
+
+~~~c++
+#include <bits/stdc++.h>
+using namespace std;
+using ll = long long;
+
+namespace KM {
+const int N = 305;  // 点数
+int n;              // KM::n 需要赋值
+ll cost[N][N];      // 1-index
+const ll INF = 0x3f3f3f3f3f3f3f3f;
+ll lx[N], ly[N];
+int match[N];
+ll slack[N];
+int prev[N];
+bool vy[N];
+
+void augment(int root) {
+    fill(vy + 1, vy + n + 1, false);
+    fill(slack + 1, slack + n + 1, INF);
+    int py;
+    match[py = 0] = root;
+    do {
+        vy[py] = true;
+        int x = match[py];
+        ll delta = INF;
+        int yy;
+        for (int y = 1; y <= n; y++) {
+            if (!vy[y]) {
+                if (lx[x] + ly[y] - cost[x][y] < slack[y]) {
+                    slack[y] = lx[x] + ly[y] - cost[x][y];
+                    prev[y] = py;
+                }
+                if (slack[y] < delta) {
+                    delta = slack[y];
+                    yy = y;
+                }
+            }
+        }
+        for (int y = 0; y <= n; y++) {
+            if (vy[y]) {
+                lx[match[y]] -= delta;
+                ly[y] += delta;
+            } else {
+                slack[y] -= delta;
+            }
+        }
+        py = yy;
+    } while (match[py] != -1);
+    do {
+        int pre = prev[py];
+        match[py] = match[pre];
+        py = pre;
+    } while (py);
+}
+
+ll km() {
+    for (int i = 1; i <= n; i++) {
+        lx[i] = ly[i] = -INF;
+        match[i] = -1;
+        for (int j = 1; j <= n; j++) {
+            lx[i] = std::max(lx[i], cost[i][j]);
+        }
+    }
+    ll answer = 0;
+    for (int root = 1; root <= n; root++) {
+        augment(root);
+    }
+    for (int i = 1; i <= n; i++) {
+        answer += lx[i];
+        answer += ly[i];
+        // printf("%d %d\n", match[i], i);
+    }
+    return answer;
+}
+}  // namespace KM
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin >> n;
+    KM::n = n;
+    vector p(n + 1, vector<int>(n + 1));
+    vector q(n + 1, vector<int>(n + 1));
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+            cin >> p[i][j];
+        }
+    }
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+            cin >> q[i][j];
+        }
+    }
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+            KM::cost[i][j] = p[i][j] * q[j][i];
+        }
+    }
+    cout << KM::km() << "\n";
     return 0;
 }
 ~~~
