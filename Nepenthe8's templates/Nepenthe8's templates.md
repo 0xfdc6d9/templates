@@ -2922,6 +2922,8 @@ int main() {
 
 有向图的 tarjan 和无向图的 tarjan 不一样（在[样例](https://www.luogu.com.cn/problem/P3387)中用无向图的 dfs 会造成越界）。
 
+无向图中化环为点，tarjan 中改为类似无向图的 dfs，[例](https://atcoder.jp/contests/abc266/submissions/36902612)。
+
 ~~~c++
 int dfn[N], low[N], times/* 时间戳 */;
 int co[N]/* 缩点后每个点对应的标号，1-index */, col/* 缩点后还有几个点 */;
